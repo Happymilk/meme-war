@@ -89,6 +89,13 @@ $(document).ready(() => {
     }, 1000);
 
     var refreshIntervalId;
+    $('#next').click(() => {
+        $.get('/mvt').done((data) => {
+            $('#mvt').html(`<audio autoplay controls src="${data}" id="main" style="min-width: 700px;"></audio> `);
+        });
+    });
+    $('#next').click();
+
     $.get('/start').done((data) => {
         if (data != 'started') {
             refreshIntervalId = setInterval(() => {

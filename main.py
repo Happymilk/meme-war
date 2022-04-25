@@ -11,6 +11,7 @@ cc = 10
 players = []
 vote_start = []
 vote_end = []
+music = []
 memes = []
 cards = []
 capt = []
@@ -21,6 +22,7 @@ round = []
 last_start = -1
 last_end = -1
 last_cap = -1
+last_track = -1
 voted = None
 votd = True
 
@@ -28,10 +30,12 @@ app = Flask(__name__)
 
 
 def generate():
-    global vote_start, vote_end, memes, cards, captions, capt
+    global vote_start, vote_end, memes, cards, captions, capt, music
 
     vote_start = os.listdir('./static/music/vote/start')
     vote_end = os.listdir('./static/music/vote/end')
+
+    music = os.listdir('./static/music/back/')
 
     memes = os.listdir('./static/memes/gif')
     memes += os.listdir('./static/memes/img')
@@ -131,6 +135,17 @@ def mvs():
 @app.route('/mve')
 def mve():
     return f'./static/music/vote/end/{vote_end[last_end]}'
+
+
+@app.route('/mvt')
+def mvt():
+    global last_track
+
+    last_track += 1
+    if last_track >= len(music):
+        last_track = 0
+
+    return f'./static/music/back/{music[last_track]}'
 
 
 @app.route('/players')
