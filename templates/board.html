@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="/static/main.css">
+    <title>Meme War</title>
+    <link href="/static/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+</head>
+
+<body class="flex flex-col justify-center min-h-screen text-gray-900 board">
+    <div class="head">
+        <h1>Meme War</h1>
+        <audio autoplay controls src="/static/music/Boris Brejcha - Grand Palais for Cercle.mp3" id="main" style="min-width: 700px;"></audio>
+        <input type="number" id="cards" style="margin-left: 20px; margin-right: 20px; font-size: larger;" min="10" max="100" value="10">
+        <input type="button" id="start" style="margin-top: 30px;background-color: darkgreen; height: 40px; width: 200px; font-size: larger;" value="Старт" />
+        <div id="mvp"></div>
+    </div>
+    <div style="display: flex; min-height: calc(100% - 100px); max-height: calc(100% - 100px);">
+        <div id="players" style="min-width: 20%;"></div>
+        <div style="min-width: 80%;">
+            <table style="min-width: 100%; min-height: 100%;">
+                <tr>
+                    <th>
+                        <h1 id="roundhead"></h1>
+                    </th>
+                </tr>
+                <tr>
+                    <th id="capthead">
+                        <h1 id="caption" style="text-align: center; margin-left: 50px;"></h1>
+                    </th>
+                </tr>
+                <tr>
+                    <td id="mem" align="center"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <script type="text/javascript" src="/static/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/board.js"></script>
+</body>
+
+</html>
