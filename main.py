@@ -21,7 +21,7 @@ def generate(game: Game):
     game.music['vote_start'] = os.listdir('./static/music/vote/start')
     game.music['vote_end'] = os.listdir('./static/music/vote/end')
 
-    game.music = os.listdir('./static/music/back/')
+    game.music['tracks'] = os.listdir('./static/music/back/')
 
     memes = os.listdir('./static/memes/gif')
     memes += os.listdir('./static/memes/img')
@@ -135,7 +135,7 @@ def mvt():
     game = get_game()
 
     game.last['track'] += 1
-    if game.last['track'] >= len(game.music):
+    if game.last['track'] >= len(game.music['tracks']):
         game.last['track'] = 0
 
     return f'./static/music/back/{game.music[game.last["track"]]}'
@@ -155,7 +155,7 @@ def start():
     s = request.args.get('start')
     ccc = request.args.get('cc')
     if s and ccc:
-        game.status = GameStatus.STARTED
+        game.status = GameStatus.PICK
         random.shuffle(game.assets['cards'])
         random.shuffle(game.assets['captions'])
         game.options['cards_count'] = int(ccc)
@@ -446,7 +446,7 @@ def rules():
 if __name__ == '__main__':
     try:
         try:
-            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=8000)
+            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=80)
         except Exception:
             app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=10000)
     except Exception:
