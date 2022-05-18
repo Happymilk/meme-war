@@ -6,8 +6,8 @@ class GameStatus(Enum):
     NOT_STARTED = 0
     PICK = 1
     VOTE = 2
-    FINISHED = 3
-
+    ROUND = 3
+    FINISHED = 4
 
 
 class Player:
@@ -42,20 +42,29 @@ class Game:
     def __init__(self):
         self.id = shortuuid.uuid()
         self.status = GameStatus.NOT_STARTED
-        self.cc = 10
+        self.options = {
+            'cards_count': 10
+        }
+        self.music = {
+            'tracks': [],
+            'vote_start': [],
+            'vote_end': []
+        }
+        self.assets = {
+            'cards': [],
+            'captions': []
+        }
         self.players = []
-        self.vote_start = []
-        self.vote_end = []
-        self.music = []
-        self.cards = []
-        self.capt = []
-        self.captions = []
-        self.last_action = ''
-        self.rounds = []
-        self.last_start = -1
-        self.last_end = -1
-        self.last_cap = -1
-        self.last_track = -1
-        self.voted = None
-        self.votd = True
-
+        self.rounds = [{
+            'caption': '',
+            'picks': [],
+            'voted': None,
+            'votd': True
+        }]
+        self.last = {
+            'action': '',
+            'start': -1,
+            'end': -1,
+            'track': -1,
+            'caption': -1
+        }

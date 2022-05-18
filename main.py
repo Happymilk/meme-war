@@ -18,24 +18,24 @@ def get_game():
         return None
 
 def generate(game: Game):
-    game.vote_start = os.listdir('./static/music/vote/start')
-    game.vote_end = os.listdir('./static/music/vote/end')
+    game.music['vote_start'] = os.listdir('./static/music/vote/start')
+    game.music['vote_end'] = os.listdir('./static/music/vote/end')
 
     game.music = os.listdir('./static/music/back/')
 
     memes = os.listdir('./static/memes/gif')
     memes += os.listdir('./static/memes/img')
     for m in memes:
-        game.cards.append(Card(m))
+        game.assets['cards'].append(Card(m))
     memes = None
 
+    capt = []
     with open("./static/memes/captions.txt", 'r', encoding='utf8') as f:
-        game.capt = f.readlines()
+        capt = f.readlines()
         f.close()
 
-    for c in game.capt:
-        game.captions.append({'text': c, 'used': False})
-    game.capt = ''
+    for c in capt:
+        game.assets['captions'].append({'text': c, 'used': False})
 
 
 @app.route('/winner')
@@ -43,7 +43,7 @@ def get_winner():
     game = get_game()
 
     score = [0, '']
-    for r in game.rounds[-1]:
+    for r in game.rounds[-1]['picks']:
         if r['points'] > score[0]:
             score = []
             score.append(r['points'])
@@ -56,7 +56,7 @@ def get_winner():
     for p in game.players:
         for s in range(1, len(score)):
             if p.id == score[s]:
-                for r in game.rounds[-1]:
+                for r in game.rounds[-1]['picks']:
                     if r['id'] == p.id:
                         format = r['card'].split('.')
                         format = format[len(format) - 1]
@@ -81,18 +81,18 @@ def get_winner():
 def get_caption():
     game = get_game()
 
-    if game.capt == '':
-        game.last_cap += 1
-        if game.last_cap == len(game.captions):
-            for c in game.captions:
+    if game.rounds[-1]['caption'] == '':
+        game.last['caption'] += 1
+        if game.last['caption'] == len(game.assets['captions']):
+            for c in game.assets['captions']:
                 c['used'] = False
-            game.last_cap = 0
+            game.last['caption'] = 0
 
-        game.captions[game.last_cap]['used'] = True
-        game.capt = game.captions[game.last_cap]['text']
-        return game.captions[game.last_cap]['text']
+        game.assets['captions'][game.last['caption']]['used'] = True
+        game.rounds[-1]['caption'] = game.assets['captions'][game.last['caption']]['text']
+        return game.assets['captions'][game.last['caption']]['text']
     else:
-        return game.capt
+        return game.rounds[-1]['caption']
 
 
 @app.route('/getround')
@@ -101,7 +101,7 @@ def get_round():
     
     action = ''
 
-    if game is not None and game.status != GameStatus.NOT_STARTED and len(game.players) == len(game.rounds[-1]):
+    if game is not None and game.status != GameStatus.NOT_STARTED and len(game.players) == len(game.rounds[-1]['picks']):
         if allvote() == 'yes':
             action = 'end_vote'
         else:
@@ -109,8 +109,8 @@ def get_round():
     else:
         action = ''
 
-    if action != game.last_action:
-        game.last_action = action
+    if action != game.last['action']:
+        game.last['action'] = action
         return action
     else:
         return ''
@@ -120,25 +120,25 @@ def get_round():
 def mvs():
     game = get_game()
 
-    return f'./static/music/vote/start/{game.vote_start[game.last_start]}'
+    return f'./static/music/vote/start/{game.music["vote_start"][game.last["start"]]}'
 
 
 @app.route('/mve')
 def mve():
     game = get_game()
 
-    return f'./static/music/vote/end/{game.vote_end[game.last_end]}'
+    return f'./static/music/vote/end/{game.music["vote_end"][game.last["end"]]}'
 
 
 @app.route('/mvt')
 def mvt():
     game = get_game()
 
-    game.last_track += 1
-    if game.last_track >= len(game.music):
-        game.last_track = 0
+    game.last['track'] += 1
+    if game.last['track'] >= len(game.music):
+        game.last['track'] = 0
 
-    return f'./static/music/back/{game.music[game.last_track]}'
+    return f'./static/music/back/{game.music[game.last["track"]]}'
 
 
 @app.route('/players')
@@ -156,13 +156,13 @@ def start():
     ccc = request.args.get('cc')
     if s and ccc:
         game.status = GameStatus.STARTED
-        random.shuffle(game.cards)
-        random.shuffle(game.captions)
-        game.cc = int(ccc)
-        game.votd = True
+        random.shuffle(game.assets['cards'])
+        random.shuffle(game.assets['captions'])
+        game.options['cards_count'] = int(ccc)
+        game.rounds[-1]['votd'] = True
         for p in game.players:
-            for _ in range(0, game.cc):
-                for c in game.cards:
+            for _ in range(0, game.options['cards_count']):
+                for c in game.assets['cards']:
                     if not c.owner:
                         c.owner = p.id
                         c.owner_name = p.name
@@ -181,19 +181,20 @@ def start():
 def reset():
     game = get_game()
 
-    game.rounds.append([])
+    game.rounds.append({
+        'caption': '',
+        'picks': [],
+        'voted': [],
+        'votd': True
+    })
 
-    game.last_start += 1
-    if game.last_start == len(game.vote_start):
-        game.last_start = 0
+    game.last['start'] += 1
+    if game.last['start'] == len(game.music['vote_start']):
+        game.last['start'] = 0
 
-    game.last_end += 1
-    if game.last_end == len(game.vote_end):
-        game.last_end = 0
-
-    game.voted = []
-
-    game.capt = ''
+    game.last['end'] += 1
+    if game.last['end'] == len(game.music['vote_end']):
+        game.last['end'] = 0
 
     return 'reseted'
 
@@ -270,17 +271,17 @@ def send():
     id = request.args.get('id')
     card = request.args.get('card')
     if id and card:
-        if game.votd:
-            game.votd = False
+        if game.rounds[-1]['votd']:
+            game.rounds[-1]['votd'] = False
         for p in game.players:
             if p.id == id:
                 for c in p.cards:
                     if c.path == card:
-                        for rp in game.rounds[-1]:
+                        for rp in game.rounds[-1]['picks']:
                             if rp['id'] == id:
                                 return redirect('/')
 
-                        game.rounds[-1].append({
+                        game.rounds[-1]['picks'].append({
                             'id': id,
                             'name': p.name,
                             'card': card,
@@ -331,10 +332,10 @@ def gv():
 
     id = request.args.get('id')
     if id:
-        if len(game.players) == len(game.rounds[-1]):
+        if len(game.players) == len(game.rounds[-1]['picks']):
             for p in game.players:
-                if len(p.cards) < game.cc:
-                    for allcard in game.cards:
+                if len(p.cards) < game.options['cards_count']:
+                    for allcard in game.assets['cards']:
                         if not allcard.owner:
                             allcard.owner = p.id
                             allcard.owner_name = p.name
@@ -357,7 +358,7 @@ def vote():
         for p in game.players:
             if p.id == id:
                 inner = ''
-                for r in game.rounds[-1]:
+                for r in game.rounds[-1]['picks']:
                     format = r['card'].split('.')
                     format = format[len(format) - 1]
 
@@ -380,11 +381,11 @@ def sendvote():
     id = request.args.get('id')
     vid = request.args.get('vid')
     if id and vid:
-        for v in game.voted:
+        for v in game.rounds[-1]['voted']:
             if v == id:
                 return redirect(f'/client?id={id}')
-        game.voted.append(id)
-        for r in game.rounds[-1]:
+        game.rounds[-1]['voted'].append(id)
+        for r in game.rounds[-1]['picks']:
             if r['id'] == vid:
                 r['points'] += 1
                 break
@@ -397,8 +398,8 @@ def sendvote():
 def allvote():
     game = get_game()
 
-    if game.votd or len(game.voted) == len(game.players):
-        game.votd = True
+    if game.rounds[-1]['votd'] or len(game.rounds[-1]['voted']) == len(game.players):
+        game.rounds[-1]['votd'] = True
         return 'yes'
     else:
         return 'no'
@@ -408,14 +409,14 @@ def allvote():
 def ar():
     game = get_game()
 
-    return jsonify(game.voted)
+    return jsonify(game.rounds[-1]['voted'])
 
 
 @app.route('/getjround')
 def arj():
     game = get_game()
 
-    return jsonify(game.rounds[-1])
+    return jsonify(game.rounds[-1]['picks'])
 
 
 @app.route('/create')
