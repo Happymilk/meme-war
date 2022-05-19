@@ -19,19 +19,23 @@ class Player:
 
     def serialize(self):
         return {
+            'id': self.id,
             'name': self.name,
-            'points': self.points
+            'points': self.points,
+            'cards': [c.serialize() for c in self.cards]
         }
 
 
 class Card:
-    def __init__(self, path):
+    def __init__(self, path, fullpath):
+        self.fullpath = fullpath
         self.path = path
         self.owner = None
         self.owner_name = ''
 
     def serialize(self):
         return {
+            'fullpath': self.fullpath,
             'path': self.path,
             'owner': self.owner,
             'name': self.owner_name
@@ -67,4 +71,19 @@ class Game:
             'end': -1,
             'track': -1,
             'caption': -1
+        }
+
+    def serialize(self):
+        return {
+            'id': self.id,
+            'status': str(self.status),
+            'options': self.options,
+            'last': self.last,
+            'players': [p.serialize() for p in self.players],
+            'rounds': self.rounds,
+            'assets': {
+                'cards': [c.serialize() for c in self.assets['cards']],
+                'captions': self.assets['captions']
+            },
+            'music': self.music
         }

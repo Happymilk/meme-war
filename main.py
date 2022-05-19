@@ -1,4 +1,5 @@
 import traceback
+import json
 import sys
 import os
 import random
@@ -7,6 +8,7 @@ from models import Game, GameStatus, Player, Card
 
 
 games = []
+
 
 app = Flask(__name__)
 
@@ -17,17 +19,21 @@ def get_game():
     except Exception:
         return None
 
+
+def generate_memes(game, path):
+    memes = os.listdir(path)
+    for m in memes:
+        game.assets['cards'].append(Card(m, f'{path}/{m}'))
+
+
 def generate(game: Game):
     game.music['vote_start'] = os.listdir('./static/music/vote/start')
     game.music['vote_end'] = os.listdir('./static/music/vote/end')
 
     game.music['tracks'] = os.listdir('./static/music/back/')
 
-    memes = os.listdir('./static/memes/gif')
-    memes += os.listdir('./static/memes/img')
-    for m in memes:
-        game.assets['cards'].append(Card(m))
-    memes = None
+    generate_memes(game, './static/memes/gif')
+    generate_memes(game, './static/memes/img')
 
     capt = []
     with open("./static/memes/captions.txt", 'r', encoding='utf8') as f:
@@ -36,45 +42,6 @@ def generate(game: Game):
 
     for c in capt:
         game.assets['captions'].append({'text': c, 'used': False})
-
-
-@app.route('/winner')
-def get_winner():
-    game = get_game()
-
-    score = [0, '']
-    for r in game.rounds[-1]['picks']:
-        if r['points'] > score[0]:
-            score = []
-            score.append(r['points'])
-            score.append(r['id'])
-        elif score[0] == r['points']:
-            score.append(r['id'])
-
-    win = 'Раунд за: '
-    ppp = ''
-    for p in game.players:
-        for s in range(1, len(score)):
-            if p.id == score[s]:
-                for r in game.rounds[-1]['picks']:
-                    if r['id'] == p.id:
-                        format = r['card'].split('.')
-                        format = format[len(format) - 1]
-
-                        path = 1
-                        ppp = '/static/memes/img/'
-                        if (format == 'gif'):
-                            path = 2
-                            ppp = '/static/memes/gif/'
-
-                        ppp += r['card']
-                        p.points += path
-                        win += f'{p.name} +{path};'
-                        break
-
-    win += f'|||<img src="{ppp}" id="supermem" style="margin-left: 50px;">'
-
-    return win
 
 
 @app.route('/caption')
@@ -120,12 +87,20 @@ def get_round():
 def mvs():
     game = get_game()
 
+    game.last['start'] += 1
+    if game.last['start'] >= len(game.music['vote_start']):
+        game.last['start'] = 0
+
     return f'./static/music/vote/start/{game.music["vote_start"][game.last["start"]]}'
 
 
 @app.route('/mve')
 def mve():
     game = get_game()
+
+    game.last['end'] += 1
+    if game.last['end'] >= len(game.music['vote_end']):
+        game.last['end'] = 0
 
     return f'./static/music/vote/end/{game.music["vote_end"][game.last["end"]]}'
 
@@ -145,7 +120,7 @@ def mvt():
 def get_players():
     game = get_game()
 
-    return jsonify([p.serialize() for p in game.players])
+    return jsonify([p.serialize() for p in game.players], sort_keys=False)
 
 
 @app.route('/start')
@@ -187,14 +162,6 @@ def reset():
         'voted': [],
         'votd': True
     })
-
-    game.last['start'] += 1
-    if game.last['start'] == len(game.music['vote_start']):
-        game.last['start'] = 0
-
-    game.last['end'] += 1
-    if game.last['end'] == len(game.music['vote_end']):
-        game.last['end'] = 0
 
     return 'reseted'
 
@@ -311,15 +278,7 @@ def show():
                                 del p.cards[pc]
                                 break
 
-                        format = card.split('.')
-                        format = format[len(format) - 1]
-
-                        path = ''
-                        if (format == 'gif'):
-                            path = '/static/memes/gif/'
-                        else:
-                            path = '/static/memes/img/'
-                        return render_template('show.html', card=(path + card))
+                        return render_template('show.html', card=(c.fullpath))
 
         return redirect('/')
     else:
@@ -359,15 +318,7 @@ def vote():
             if p.id == id:
                 inner = ''
                 for r in game.rounds[-1]['picks']:
-                    format = r['card'].split('.')
-                    format = format[len(format) - 1]
-
-                    path = ''
-                    if (format == 'gif'):
-                        path = '/static/memes/gif/'
-                    else:
-                        path = '/static/memes/img/'
-                    inner += f'<div class="container"><div>{r["name"]}:</div><div class="overlay" hidden id="{r["id"]}" onclick="$(\'#{r["id"]}\').hide();"><input type="button" class="overlaybtn" style="background-color: darkgreen;" onclick="location.href=\'/sendvote?id={id}&vid={r["id"]}\';" value="Выбрать" /></div><img src="{path + r["card"]}" onclick="$(\'#{r["id"]}\').show();"/></div>'
+                    inner += f'<div class="container"><div>{r["name"]}:</div><div class="overlay" hidden id="{r["id"]}" onclick="$(\'#{r["id"]}\').hide();"><input type="button" class="overlaybtn" style="background-color: darkgreen;" onclick="location.href=\'/sendvote?id={id}&vid={r["id"]}\';" value="Выбрать" /></div><img src="{r["card"]["fullpath"]}" onclick="$(\'#{r["id"]}\').show();"/></div>'
                 return render_template('vote.html', body=inner)
         return redirect('/join?clear=true')
     else:
@@ -419,11 +370,55 @@ def arj():
     return jsonify(game.rounds[-1]['picks'])
 
 
+@app.route('/getjgame')
+def gj():
+    game = get_game()
+
+    return jsonify(game.serialize())
+
+
+@app.route('/winner')
+def get_winner():
+    game = get_game()
+
+    score = [0, '']
+    for r in game.rounds[-1]['picks']:
+        if r['points'] > score[0]:
+            score = []
+            score.append(r['points'])
+            score.append(r['id'])
+        elif score[0] == r['points']:
+            score.append(r['id'])
+
+    win = 'Раунд за: '
+    ppp = ''
+    for p in game.players:
+        for s in range(1, len(score)):
+            if p.id == score[s]:
+                for r in game.rounds[-1]['picks']:
+                    if r['id'] == p.id:
+                        format = r['card'].split('.')
+                        format = format[len(format) - 1]
+
+                        points = 1
+                        if (format == 'gif'):
+                            points = 2
+
+                        ppp = r['card'].fullpath
+                        p.points += points
+                        win += f'{p.name} +{points};'
+                        break
+
+    win += f'|||<img src="{ppp}" id="supermem" style="margin-left: 50px;">'
+
+    return win
+
+
 @app.route('/create')
 def create():
-    game = Game()
-    generate(game)
-    games.append(game)
+    # game = Game()
+    # generate(game)
+    # games.append(game)
 
     return redirect('/board')
 
@@ -445,8 +440,16 @@ def rules():
 
 if __name__ == '__main__':
     try:
+        game = Game()
+        generate(game)
+        games.append(game)
+
+        get_round()
+
+
+
         try:
-            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=80)
+            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=8000)
         except Exception:
             app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=10000)
     except Exception:
