@@ -454,7 +454,7 @@ img {
 }
 
 audio {
-    margin: 20px;
+    margin: 20px 0;
 }
 
 .board {
@@ -484,4 +484,12 @@ audio {
     min-width: 100%;
     padding: 5% 0;
     font-size: xx-large;
+}
+
+div {
+    border: 1px solid;
+}
+
+input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
 }

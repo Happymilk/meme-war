@@ -109,18 +109,25 @@ def mve():
 def mvt():
     game = get_game()
 
+    return f'./static/music/back/{game.music["tracks"][game.last["track"]]}'
+
+
+@app.route('/nextmvt')
+def nextmvt():
+    game = get_game()
+
     game.last['track'] += 1
     if game.last['track'] >= len(game.music['tracks']):
         game.last['track'] = 0
 
-    return f'./static/music/back/{game.music[game.last["track"]]}'
+    return mvt()
 
 
 @app.route('/players')
 def get_players():
     game = get_game()
 
-    return jsonify([p.serialize() for p in game.players], sort_keys=False)
+    return jsonify([p.serialize() for p in game.players])
 
 
 @app.route('/start')
@@ -436,6 +443,11 @@ def index():
 @app.route('/rules')
 def rules():
     return render_template('rules.html')
+
+
+@app.route('/temp')
+def temps():
+    return render_template('temp_board.html')
 
 
 if __name__ == '__main__':

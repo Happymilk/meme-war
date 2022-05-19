@@ -4,10 +4,22 @@ from enum import Enum
 
 class GameStatus(Enum):
     NOT_STARTED = 0
-    PICK = 1
-    VOTE = 2
-    ROUND = 3
-    FINISHED = 4
+    START = 1
+    ROUND_START = 2
+    PICK = 3
+    VOTE_START = 4
+    VOTE = 5
+    VOTE_END = 6
+    ROUND_END = 7
+    FINISHED = 8
+
+
+class PlayerStatus(Enum):
+    CONNECTED = 1,
+    SHOULD_PICK = 2,
+    PICKED = 3,
+    SHOULD_VOTE = 4,
+    VOTED = 5
 
 
 class Player:
@@ -15,12 +27,14 @@ class Player:
         self.name = name
         self.id = shortuuid.uuid()
         self.points = 0
+        self.status = PlayerStatus.CONNECTED
         self.cards = []
 
     def serialize(self):
         return {
             'id': self.id,
             'name': self.name,
+            'status': self.status,
             'points': self.points,
             'cards': [c.serialize() for c in self.cards]
         }

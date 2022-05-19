@@ -90,11 +90,14 @@ $(document).ready(() => {
 
     var refreshIntervalId;
     $('#next').click(() => {
-        $.get('/mvt').done((data) => {
-            $('#mvt').html(`<audio autoplay controls src="${data}" id="main" style="min-width: 700px;"></audio> `);
+        $.get('/nextmvt').done((data) => {
+            $('#mvt').html(`<audio autoplay controls src="${data}" id="main" style="min-width: 100%"></audio> `);
         });
     });
-    $('#next').click();
+    
+    $.get('/mvt').done((data) => {
+        $('#mvt').html(`<audio autoplay controls src="${data}" id="main" style="min-width: 100%"></audio> `);
+    });
 
     $.get('/start').done((data) => {
         if (data != 'started') {
@@ -104,6 +107,7 @@ $(document).ready(() => {
         } else {
             $('#start').hide();
             $('#cards').hide();
+            $('#cardscap').hide();
 
             getPlayers();
             capti();
@@ -114,6 +118,7 @@ $(document).ready(() => {
         clearInterval(refreshIntervalId);
         $('#start').hide();
         $('#cards').hide();
+        $('#cardscap').hide();
         $.get(`/start?start=true&cc=${$('#cards').val()}`);
         startRound();
     });
