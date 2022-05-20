@@ -1,5 +1,6 @@
 $(document).ready(() => {
-    let players = [];
+    let players = [],
+        last = -1;
 
     $.get('/mvt').done((data) => {
         $('#mvt').html(`<audio autoplay controls src="${data}" id="main"></audio> `);
@@ -13,7 +14,7 @@ $(document).ready(() => {
 
     $('#start').click(() => {
         $.get(`/start?cc=${$('#cards').val()}`);
-    });    
+    });
 
     function hide() {
         $('#start').hide();
@@ -32,22 +33,26 @@ $(document).ready(() => {
             switch (data[0]) {
                 case 0:
                     show();
-                    if (players != data[1]) {
+                    if (players.length != data[1].length) {
                         players = data[1];
                         let in_text = "<table><th><h1>Игроки:</h1></th>";
-                        data[1].forEach(e => {
+                        for (let i = 0; i < data[1].length; i++) {
+                            e = data[1][i];
                             in_text += `<tr><td><h1>${e.name}</h1></td><td style="padding-left: 20px;"><h1>${e.points}</h1></td></tr>`;
-                        });
+                        }
                         in_text += '</table>'
                         $('#players').html(in_text);
                     }
                     break;
-            
+
                 case 1:
                     hide();
                     break;
 
                 case 2:
+                    if (last == data[0])
+                        return
+
                     hide();
                     $('#mem').html('');
                     $('#roundhead').html('');
@@ -65,6 +70,9 @@ $(document).ready(() => {
                     break;
 
                 case 4:
+                    if (last == data[0])
+                        return
+
                     hide();
                     $('#mvp').html(`<audio autoplay controls src="${data[1]}" id='mvpm' onpause='$("#main").trigger("play");'></audio>`);
                     $('#main').trigger("pause");
@@ -81,12 +89,18 @@ $(document).ready(() => {
                     break;
 
                 case 6:
+                    if (last == data[0])
+                        return
+
                     hide();
                     $('#mvp').html(`<audio autoplay controls src="${data[1]}" id='mvpm' onpause='$("#main").trigger("play");'></audio>`);
                     $('#main').trigger("pause");
                     break;
 
                 case 7:
+                    if (last == data[0])
+                        return
+
                     hide();
                     let res = data[1].split('|||');
                     $('#roundhead').html(res[0]);
@@ -101,6 +115,9 @@ $(document).ready(() => {
                 default:
                     break;
             }
+
+            if (last != data[0])
+                last = data[0]
         });
     }, 1000);
 });

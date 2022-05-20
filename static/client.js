@@ -30,6 +30,7 @@ $(document).ready(() => {
     }
 
     let id;
+    let last = -1;
 
     if (document.cookie == '') {
         id = (new URLSearchParams(window.location.search)).get('id');
@@ -41,18 +42,25 @@ $(document).ready(() => {
         id = getCookie('user');
         if (id == undefined)
             location.href = `/`;
-    } 
+    }
 
     setInterval(() => {
-        $.get(`/clienttick?id=${id}`).done((data) => {
+        $.get(`/clienttick${window.location.search}`).done((data) => {
             let in_text = '';
-            switch (data[0]) {            
+            switch (data[0]) {
+                case 0:
+                    location.href = '/join?clear=true';
+                    break;
                 case 1:
                 case 7:
                     $('#loading').show();
                     break;
 
                 case 2:
+                    if (last == data[0])
+                        return
+
+                    $('#loading').hide();
                     in_text = "<h1>Карты:</h1>";
                     let i = 0;
                     data[1].forEach(e => {
@@ -64,11 +72,19 @@ $(document).ready(() => {
                     break;
 
                 case 3:
+                    if (last == data[0])
+                        return
+
+                    $('#loading').hide();
                     in_text = `<h1>Твой выбор:</h1><img id="pic" src="${data[1]}" />`
                     $('#my').html(in_text);
                     break;
 
                 case 4:
+                    if (last == data[0])
+                        return
+
+                    $('#loading').hide();
                     in_text = `<h1>Голосование:</h1>${data[1]}`
                     $('#my').html(in_text);
                     break;
@@ -82,6 +98,9 @@ $(document).ready(() => {
                 default:
                     break;
             }
+
+            if (last != data[0])
+                last = data[0]
         });
     }, 1000);
 });

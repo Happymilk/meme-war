@@ -47,14 +47,12 @@ class Card:
         self.fullpath = fullpath
         self.path = path
         self.owner = None
-        self.owner_name = ''
 
     def serialize(self):
         return {
             'fullpath': self.fullpath,
             'path': self.path,
-            'owner': self.owner,
-            'name': self.owner_name
+            'owner': self.owner
         }
 
 
@@ -80,7 +78,8 @@ class Game:
             'start': -1,
             'end': -1,
             'track': -1,
-            'caption': -1
+            'caption': -1,
+            'serverstatus': int(GameStatus.NOT_STARTED)
         }
 
     def serialize(self):
