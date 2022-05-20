@@ -15,12 +15,13 @@ class GameStatus(IntEnum):
 
 
 class PlayerStatus(IntEnum):
-    NOT_EXIST = 0,
     CONNECTED = 1,
     SHOULD_PICK = 2,
     PICKED = 3,
     SHOULD_VOTE = 4,
-    VOTED = 5
+    VOTED = 5,
+    LOST = 6,
+    WON = 7
 
 
 class Player:
@@ -76,7 +77,6 @@ class Game:
         self.players = []
         self.rounds = []
         self.last = {
-            'action': '',
             'start': -1,
             'end': -1,
             'track': -1,

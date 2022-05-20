@@ -21,6 +21,6 @@ $(document).ready(() => {
 
         var user = getCookie('user');
         if (user != undefined)
-            location.href = `/check?id=${user}`;
+            location.href = `/client?id=${user}`;
     }
 });

@@ -1,82 +1,86 @@
 $(document).ready(() => {
-    if (document.cookie == '') {
-        function setCookie(name, value, options = {}) {
+    function setCookie(name, value, options = {}) {
+        options = {
+            path: '/',
+            ...options
+        };
 
-            options = {
-                path: '/',
-                ...options
-            };
-
-            if (options.expires instanceof Date) {
-                options.expires = options.expires.toUTCString();
-            }
-
-            let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
-
-            for (let optionKey in options) {
-                updatedCookie += "; " + optionKey;
-                let optionValue = options[optionKey];
-                if (optionValue !== true) {
-                    updatedCookie += "=" + optionValue;
-                }
-            }
-
-            document.cookie = updatedCookie;
+        if (options.expires instanceof Date) {
+            options.expires = options.expires.toUTCString();
         }
 
-        var id = (new URLSearchParams(window.location.search)).get('id');
+        let updatedCookie = encodeURIComponent(name) + "=" + encodeURIComponent(value);
+
+        for (let optionKey in options) {
+            updatedCookie += "; " + optionKey;
+            let optionValue = options[optionKey];
+            if (optionValue !== true) {
+                updatedCookie += "=" + optionValue;
+            }
+        }
+
+        document.cookie = updatedCookie;
+    }
+
+    function getCookie(name) {
+        let matches = document.cookie.match(new RegExp(
+            "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+        ));
+        return matches ? decodeURIComponent(matches[1]) : undefined;
+    }
+
+    let id;
+
+    if (document.cookie == '') {
+        id = (new URLSearchParams(window.location.search)).get('id');
         if (id != null)
             setCookie('user', id, { 'max-age': 432000 });
         else
             location.href = '/';
-    }
+    } else {
+        id = getCookie('user');
+        if (id == undefined)
+            location.href = `/`;
+    } 
 
-    var id = (new URLSearchParams(window.location.search)).get('id');
-    if (id == null)
-        location.href = '/';
+    setInterval(() => {
+        $.get(`/clienttick?id=${id}`).done((data) => {
+            let in_text = '';
+            switch (data[0]) {            
+                case 1:
+                case 7:
+                    $('#loading').show();
+                    break;
 
-    var refreshIntervalId, refreshIntervalId2;
-
-    function dosm() {
-        $('.head').hide();
-        $.get(`/get?id=${id}`).done((d) => {
-            var in_text = "<h1>Карты:</h1>";
-            var i = 0;
-            d.forEach(e => {
-                var format = e.path.split('.');
-                format = format[format.length - 1];
-
-                var path = '';
-                if (format == 'gif')
-                    path = '/static/memes/gif/';
-                else
-                    path = '/static/memes/img/';
-                in_text += `<div class="container"><div class='overlay' hidden id='${i}' onclick="$('#${i}').hide();"><input type="button" class="overlaybtn" style="background-color: darkgreen;" onclick="location.href='/send?id=${id}&card=${e.path}';" value="Выбрать" /></div><img src="${path + e.path}" onclick="$('#${i}').show();"/>${e.path}</div>`;
-                i++;
-            });
-
-            $('#my').html(in_text);
-            clearInterval(refreshIntervalId2);
-        });
-    }
-
-    refreshIntervalId = setInterval(() => {
-        $.get('/start').done((data) => {
-            if (data == 'started') {
-                refreshIntervalId2 = setInterval(() => {
-                    $.get('/allvoted').done((data2) => {
-                        if (data2 == 'yes') {
-                            dosm();
-                        } else {
-                            $.get(`/getvote?id=${id}`).done((data3) => {
-                                if (data3 == 'not') {
-                                    dosm();
-                                }
-                            });
-                        }
+                case 2:
+                    in_text = "<h1>Карты:</h1>";
+                    let i = 0;
+                    data[1].forEach(e => {
+                        in_text += `<div class="container"><div class='overlay' hidden id='${i}' onclick="$('#${i}').hide();"><input type="button" class="overlaybtn" style="background-color: darkgreen;" onclick="location.href='/sendcard?id=${id}&card=${e.path}';" value="Выбрать" /></div><img src="${e.fullpath}" onclick="$('#${i}').show();"/>${e.path}</div>`;
+                        i++;
                     });
-                }, 1000);
-                clearInterval(refreshIntervalId);
+
+                    $('#my').html(in_text);
+                    break;
+
+                case 3:
+                    in_text = `<h1>Твой выбор:</h1><img id="pic" src="${data[1]}" />`
+                    $('#my').html(in_text);
+                    break;
+
+                case 4:
+                    in_text = `<h1>Голосование:</h1>${data[1]}`
+                    $('#my').html(in_text);
+                    break;
+
+                case 5:
+                    break;
+
+                case 6:
+                    break;
+
+                default:
+                    break;
             }
         });
     }, 1000);
