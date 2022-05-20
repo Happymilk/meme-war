@@ -1,8 +1,8 @@
 import shortuuid
-from enum import Enum
+from enum import IntEnum
 
 
-class GameStatus(Enum):
+class GameStatus(IntEnum):
     NOT_STARTED = 0
     START = 1
     ROUND_START = 2
@@ -14,7 +14,8 @@ class GameStatus(Enum):
     FINISHED = 8
 
 
-class PlayerStatus(Enum):
+class PlayerStatus(IntEnum):
+    NOT_EXIST = 0,
     CONNECTED = 1,
     SHOULD_PICK = 2,
     PICKED = 3,
@@ -73,12 +74,7 @@ class Game:
             'captions': []
         }
         self.players = []
-        self.rounds = [{
-            'caption': '',
-            'picks': [],
-            'voted': None,
-            'votd': True
-        }]
+        self.rounds = []
         self.last = {
             'action': '',
             'start': -1,

@@ -4,7 +4,7 @@ import sys
 import os
 import random
 from flask import Flask, render_template, request, jsonify, redirect
-from models import Game, GameStatus, Player, Card
+from models import Game, GameStatus, Player, Card, PlayerStatus
 
 
 games = []
@@ -13,7 +13,8 @@ games = []
 app = Flask(__name__)
 
 
-def get_game():
+### General methods ###
+def get_game() -> Game:
     try:
         return games[0]
     except Exception:
@@ -26,7 +27,7 @@ def generate_memes(game, path):
         game.assets['cards'].append(Card(m, f'{path}/{m}'))
 
 
-def generate(game: Game):
+def generate_game(game: Game):
     game.music['vote_start'] = os.listdir('./static/music/vote/start')
     game.music['vote_end'] = os.listdir('./static/music/vote/end')
 
@@ -44,6 +45,7 @@ def generate(game: Game):
         game.assets['captions'].append({'text': c, 'used': False})
 
 
+### Main getters ###
 @app.route('/caption')
 def get_caption():
     game = get_game()
@@ -51,6 +53,7 @@ def get_caption():
     if game.rounds[-1]['caption'] == '':
         game.last['caption'] += 1
         if game.last['caption'] == len(game.assets['captions']):
+            # reset captions
             for c in game.assets['captions']:
                 c['used'] = False
             game.last['caption'] = 0
@@ -60,6 +63,141 @@ def get_caption():
         return game.assets['captions'][game.last['caption']]['text']
     else:
         return game.rounds[-1]['caption']
+
+
+@app.route('/mvs')
+def get_mvs(): # vote start music
+    game = get_game()
+
+    game.last['start'] += 1
+    if game.last['start'] >= len(game.music['vote_start']):
+        game.last['start'] = 0
+
+    return f'./static/music/vote/start/{game.music["vote_start"][game.last["start"]]}'
+
+
+@app.route('/mve')
+def get_mve(): # vote end music
+    game = get_game()
+
+    game.last['end'] += 1
+    if game.last['end'] >= len(game.music['vote_end']):
+        game.last['end'] = 0
+
+    return f'./static/music/vote/end/{game.music["vote_end"][game.last["end"]]}'
+
+
+@app.route('/mvt')
+def get_mvt(): # background music
+    game = get_game()
+
+    return f'./static/music/back/{game.music["tracks"][game.last["track"]]}'
+
+
+@app.route('/nextmvt')
+def get_nextmvt(): # next track
+    game = get_game()
+
+    game.last['track'] += 1
+    if game.last['track'] >= len(game.music['tracks']):
+        game.last['track'] = 0
+
+    return get_mvt()
+
+
+@app.route('/voted')
+def get_voted():
+    game = get_game()
+
+    return jsonify(game.rounds[-1]['voted'])
+
+
+@app.route('/getjround')
+def arj():
+    game = get_game()
+
+    return jsonify(game.rounds[-1]['picks'])
+
+
+@app.route('/getjgame')
+def gj():
+    game = get_game()
+
+    return jsonify(game.serialize())
+
+
+### Server logic ###
+@app.route('/start')
+def start():
+    game = get_game()
+
+    cc = request.args.get('cc')
+    if cc and len(game.players) > 1:
+        game.status = GameStatus.START
+        game.options['cards_count'] = int(cc)
+        return jsonify(True)
+    else:
+        return jsonify(False)
+
+
+@app.route('/servertick')
+def server_tick():
+    game = get_game()
+
+    if game.status == GameStatus.NOT_STARTED:
+        return jsonify([int(game.status), [p.serialize() for p in game.players]])
+
+    if game.status == GameStatus.START:
+        random.shuffle(game.assets['cards'])
+        random.shuffle(game.assets['captions'])
+
+        for p in game.players:
+            for _ in range(0, game.options['cards_count']):
+                for c in game.assets['cards']:
+                    if not c.owner:
+                        c.owner = p.id
+                        c.owner_name = p.name
+                        p.cards.append(c)
+                        break
+
+        game.status = GameStatus.ROUND_START
+    
+    if game.status == GameStatus.ROUND_START:
+        pass
+    if game.status == GameStatus.PICK:
+        pass
+    if game.status == GameStatus.VOTE_START:
+        pass
+    if game.status == GameStatus.VOTE:
+        pass
+    if game.status == GameStatus.VOTE_END:
+        pass
+    if game.status == GameStatus.ROUND_END:
+        pass
+    if game.status == GameStatus.FINISHED:
+        pass
+
+
+### Client logic ###
+@app.route('/clientstatus')
+def get_client_status() -> int:
+    game = get_game()
+
+    id = request.args.get('id')
+    if id:
+        for p in game.players:
+            if p.id == id:
+                return int(p.status)
+    
+    return int(PlayerStatus.NOT_EXIST)
+
+
+@app.route('/clienttick')
+def client_tick():
+    game = get_game()
+
+
+
 
 
 @app.route('/getround')
@@ -83,82 +221,6 @@ def get_round():
         return ''
 
 
-@app.route('/mvs')
-def mvs():
-    game = get_game()
-
-    game.last['start'] += 1
-    if game.last['start'] >= len(game.music['vote_start']):
-        game.last['start'] = 0
-
-    return f'./static/music/vote/start/{game.music["vote_start"][game.last["start"]]}'
-
-
-@app.route('/mve')
-def mve():
-    game = get_game()
-
-    game.last['end'] += 1
-    if game.last['end'] >= len(game.music['vote_end']):
-        game.last['end'] = 0
-
-    return f'./static/music/vote/end/{game.music["vote_end"][game.last["end"]]}'
-
-
-@app.route('/mvt')
-def mvt():
-    game = get_game()
-
-    return f'./static/music/back/{game.music["tracks"][game.last["track"]]}'
-
-
-@app.route('/nextmvt')
-def nextmvt():
-    game = get_game()
-
-    game.last['track'] += 1
-    if game.last['track'] >= len(game.music['tracks']):
-        game.last['track'] = 0
-
-    return mvt()
-
-
-@app.route('/players')
-def get_players():
-    game = get_game()
-
-    return jsonify([p.serialize() for p in game.players])
-
-
-@app.route('/start')
-def start():
-    game = get_game()
-
-    s = request.args.get('start')
-    ccc = request.args.get('cc')
-    if s and ccc:
-        game.status = GameStatus.PICK
-        random.shuffle(game.assets['cards'])
-        random.shuffle(game.assets['captions'])
-        game.options['cards_count'] = int(ccc)
-        game.rounds[-1]['votd'] = True
-        for p in game.players:
-            for _ in range(0, game.options['cards_count']):
-                for c in game.assets['cards']:
-                    if not c.owner:
-                        c.owner = p.id
-                        c.owner_name = p.name
-                        p.cards.append(c)
-                        break
-
-        return 'started'
-    else:
-        if game.status != GameStatus.NOT_STARTED:
-            return 'started'
-
-        return 'not'
-
-
 @app.route('/reset')
 def reset():
     game = get_game()
@@ -166,8 +228,7 @@ def reset():
     game.rounds.append({
         'caption': '',
         'picks': [],
-        'voted': [],
-        'votd': True
+        'voted': []
     })
 
     return 'reseted'
@@ -245,8 +306,6 @@ def send():
     id = request.args.get('id')
     card = request.args.get('card')
     if id and card:
-        if game.rounds[-1]['votd']:
-            game.rounds[-1]['votd'] = False
         for p in game.players:
             if p.id == id:
                 for c in p.cards:
@@ -356,32 +415,10 @@ def sendvote():
 def allvote():
     game = get_game()
 
-    if game.rounds[-1]['votd'] or len(game.rounds[-1]['voted']) == len(game.players):
-        game.rounds[-1]['votd'] = True
+    if len(game.rounds[-1]['voted']) == len(game.players):
         return 'yes'
     else:
         return 'no'
-
-
-@app.route('/round')
-def ar():
-    game = get_game()
-
-    return jsonify(game.rounds[-1]['voted'])
-
-
-@app.route('/getjround')
-def arj():
-    game = get_game()
-
-    return jsonify(game.rounds[-1]['picks'])
-
-
-@app.route('/getjgame')
-def gj():
-    game = get_game()
-
-    return jsonify(game.serialize())
 
 
 @app.route('/winner')
@@ -421,10 +458,11 @@ def get_winner():
     return win
 
 
+### Simple pages ###
 @app.route('/create')
 def create():
     # game = Game()
-    # generate(game)
+    # generate_game(game)
     # games.append(game)
 
     return redirect('/board')
@@ -450,15 +488,12 @@ def temps():
     return render_template('temp_board.html')
 
 
+### Main method ###
 if __name__ == '__main__':
     try:
         game = Game()
-        generate(game)
+        generate_game(game)
         games.append(game)
-
-        get_round()
-
-
 
         try:
             app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=8000)

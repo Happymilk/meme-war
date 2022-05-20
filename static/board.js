@@ -1,20 +1,59 @@
 $(document).ready(() => {
-    var pplayers;
+    let players = [];
 
-    function getPlayers() {
-        $.get('/players').done((data) => {
-            pplayers = data;
-            var in_text = "<table><th><h1>Игроки:</h1></th>";
+    $.get('/mvt').done((data) => {
+        $('#mvt').html(`<audio autoplay controls src="${data}" id="main"></audio> `);
+    });
 
-            data.forEach(e => {
-                in_text += `<tr><td><h1>${e.name}</h1></td><td style="padding-left: 20px;"><h1>${e.points}</h1></td></tr>`;
-            });
-
-            in_text += '</table>'
-
-            $('#players').html(in_text);
+    $('#next').click(() => {
+        $.get('/nextmvt').done((data) => {
+            $('#mvt').html(`<audio autoplay controls src="${data}" id="main"></audio> `);
         });
+    });
+
+    $('#start').click(() => {
+        $.get(`/start?cc=${$('#cards').val()}`);
+    });    
+
+    function hide() {
+        $('#start').hide();
+        $('#cards').hide();
+        $('#cardscap').hide();
     }
+
+    function show() {
+        $('#start').show();
+        $('#cards').show();
+        $('#cardscap').show();
+    }
+
+    setInterval(() => {
+        $.get('/servertick').done((data) => {
+            switch (data[0]) {
+                case 0:
+                    if (players != data[1]) {
+                        players = data[1];
+                        var in_text = "<table><th><h1>Игроки:</h1></th>";
+                        data[1].forEach(e => {
+                            in_text += `<tr><td><h1>${e.name}</h1></td><td style="padding-left: 20px;"><h1>${e.points}</h1></td></tr>`;
+                        });
+                        in_text += '</table>'
+                        $('#players').html(in_text);
+                    }
+                    break;
+            
+                default:
+                    break;
+            }
+        });
+    }, 1000);
+
+
+
+
+
+
+
 
     function capti() {
         $.get('/caption').done((caption) => {
@@ -26,7 +65,6 @@ $(document).ready(() => {
         $.get('/reset').done((data) => {
             if (data == 'reseted') {
                 $('#roundhead').html('');
-                getPlayers();
                 capti();
             }
         });
@@ -35,8 +73,8 @@ $(document).ready(() => {
     function vvv() {
         var ssss, sssss;
         ssss = setInterval(() => {
-            $.get('/round').done((data) => {
-                if (data.length == pplayers.length) {
+            $.get('/voted').done((data) => {
+                if (data.length == players.length) {
                     clearInterval(sssss);
                     $.get('/winner').done((d) => {
                         var res = d.split('|||');
@@ -65,7 +103,7 @@ $(document).ready(() => {
         }, 1000);
     }
 
-    var timee = setInterval(() => {
+    setInterval(() => {
         $.get('/getround').done((data) => {
             if (data == 'start_vote') {
                 $.get('/mvs').done((mvs) => {
@@ -86,40 +124,5 @@ $(document).ready(() => {
                 });
             }
         });
-    }, 1000);
-
-    var refreshIntervalId;
-    $('#next').click(() => {
-        $.get('/nextmvt').done((data) => {
-            $('#mvt').html(`<audio autoplay controls src="${data}" id="main" style="min-width: 100%"></audio> `);
-        });
-    });
-    
-    $.get('/mvt').done((data) => {
-        $('#mvt').html(`<audio autoplay controls src="${data}" id="main" style="min-width: 100%"></audio> `);
-    });
-
-    $.get('/start').done((data) => {
-        if (data != 'started') {
-            refreshIntervalId = setInterval(() => {
-                getPlayers();
-            }, 1000);
-        } else {
-            $('#start').hide();
-            $('#cards').hide();
-            $('#cardscap').hide();
-
-            getPlayers();
-            capti();
-        }
-    });
-
-    $('#start').click(() => {
-        clearInterval(refreshIntervalId);
-        $('#start').hide();
-        $('#cards').hide();
-        $('#cardscap').hide();
-        $.get(`/start?start=true&cc=${$('#cards').val()}`);
-        startRound();
-    });
+    }, 100000);
 });

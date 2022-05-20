@@ -493,3 +493,7 @@ div {
 input[type=number]::-webkit-inner-spin-button {
     -webkit-appearance: none;
 }
+
+#main {
+    min-width: 100%
+}
