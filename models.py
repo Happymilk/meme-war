@@ -79,7 +79,7 @@ class Game:
             'end': -1,
             'track': -1,
             'caption': -1,
-            'serverstatus': int(GameStatus.NOT_STARTED)
+            'timer': 4
         }
 
     def serialize(self):

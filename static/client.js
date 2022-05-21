@@ -99,7 +99,7 @@ $(document).ready(() => {
                     break;
             }
 
-            if (last != data[0])
+            if (last != data[0] && data[0] != '')
                 last = data[0]
         });
     }, 1000);

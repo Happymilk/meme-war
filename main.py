@@ -1,3 +1,4 @@
+import time
 import traceback
 import sys
 import os
@@ -129,6 +130,9 @@ def start(cc=None):
 def server_tick():
     game = get_game()
 
+    if game is None:
+        return jsonify([-1])
+
     if game.status == GameStatus.NOT_STARTED:
         return jsonify([int(GameStatus.NOT_STARTED), [p.serialize() for p in game.players]])
 
@@ -170,8 +174,15 @@ def server_tick():
 
     elif game.status == GameStatus.PICK:
         if len(game.players) == len(game.rounds[-1]['picks']):
-            game.status = GameStatus.VOTE_START
-        return jsonify([int(GameStatus.PICK)])
+            if game.last['timer'] == 1:
+                game.last['timer'] = 4
+                game.status = GameStatus.VOTE_START
+
+            if game.last['timer'] > 1:
+                game.last['timer'] -= 1
+                time.sleep(1)
+
+        return jsonify([int(GameStatus.PICK), game.last['timer']])
 
     elif game.status == GameStatus.VOTE_START:
         for p in game.players:
@@ -183,8 +194,8 @@ def server_tick():
     elif game.status == GameStatus.VOTE:
         if len(game.rounds[-1]['voted']) == len(game.players):
             game.status = GameStatus.VOTE_END
-        else:
-            return jsonify([int(GameStatus.VOTE), game.rounds[-1]['picks']])
+
+        return jsonify([int(GameStatus.VOTE), game.rounds[-1]['picks']])
 
     elif game.status == GameStatus.VOTE_END:
         game.status = GameStatus.ROUND_END
@@ -361,7 +372,7 @@ def client_tick(id=None, card=None):
             for c in player.cards:
                 if c.fullpath == card:
                     for pc in range(0, len(player.cards)):
-                        if player.cards[pc].path == card:
+                        if player.cards[pc].fullpath == card:
                             del player.cards[pc]
                             break
 
@@ -381,7 +392,7 @@ def client_tick(id=None, card=None):
     elif player.status == PlayerStatus.WON:
         pass
 
-    return jsonify([int(player.status)])
+    return ''
 
 
 # Simple pages #
