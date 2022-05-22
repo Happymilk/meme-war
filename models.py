@@ -63,6 +63,11 @@ class Game:
         self.options = {
             'cards_count': 10
         }
+        self.preload = {
+            'imgpreload': '',
+            'trpreload': '',
+            'imgs': ''
+        }
         self.music = {
             'tracks': [],
             'vote_start': [],

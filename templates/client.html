@@ -4,10 +4,12 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/static/main.css">
     <title>Client - Meme War</title>
+    <link rel="preload" href="/static/main.css" as="style">
+    <link rel="preload" href="/static/jquery.min.js" as="script">
+    <link rel="preload" href="/static/client.js" as="script"> {{ preload|safe }}
     <link href="/static/favicon.ico" rel="shortcut icon" type="image/x-icon" />
-    <script type="text/javascript" src="/static/jquery.min.js"></script>
+    <link rel="stylesheet" href="/static/main.css">
 </head>
 
 <body class="flex flex-col justify-center min-h-screen text-gray-900 board">
@@ -15,6 +17,7 @@
         <h1 style="min-width: 100%; text-align: center;">Ждёмс</h1>
     </div>
     <div id="my"></div>
+    <script type="text/javascript" src="/static/jquery.min.js"></script>
     <script type="text/javascript" src="/static/client.js"></script>
 </body>
 
