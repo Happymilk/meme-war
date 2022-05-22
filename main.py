@@ -42,18 +42,6 @@ def generate_game(game: Game):
     game.music['vote_end'] = os.listdir('./static/music/vote/end')
     game.music['tracks'] = os.listdir('./static/music/back')
 
-    for k, v in game.music.items():
-        path = ''
-        if k == 'tracks':
-            path = './static/music/back'
-        elif k == 'vote_start':
-            path = './static/music/vote/start'
-        elif k == 'vote_end':
-            path = './static/music/vote/end'
-
-        for t in v:
-            game.preload['trpreload'] += f'<link rel="preload" href="{path}/{t}" as="audio">\n'
-
     generate_memes(game, './static/memes/gif')
     generate_memes(game, './static/memes/img')
 
@@ -420,8 +408,6 @@ def create():
 
 @app.route('/board')
 def board():
-    game = get_game()
-
     return render_template('board.html')
 
 
