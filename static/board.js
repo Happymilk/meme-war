@@ -1,7 +1,7 @@
 $(document).ready(() => {
     let players = [],
-        last = -1;
-    let interval;
+        last = -1,
+        doreq = true;
 
     window.onbeforeunload = function(event) {
         let audio = document.getElementById('main');
@@ -70,8 +70,9 @@ $(document).ready(() => {
             return;
     }
 
-    function tick() {
-        interval = setInterval(() => {
+    setInterval(() => {
+        if (doreq) {
+            doreq = false;
             $.get('/servertick').done((data) => {
                 switch (data[0]) {
                     case -1:
@@ -100,10 +101,10 @@ $(document).ready(() => {
                         hide();
                         setplayers(data[1]);
                         setcaption(data[2]);
-                        if (data[3] != 4)
-                            $('#mvp').html(`${data[3]}`);
+                        if (data[3] != 6)
+                            $('#mem').html(`${data[3]}`);
                         else
-                            $('#mvp').html('');
+                            $('#mem').html('');
                         break;
 
                     case 4:
@@ -144,11 +145,6 @@ $(document).ready(() => {
                         let hh = $(window).height() - $('#head').height() - $('#roundhead').height() - $('#capthead').height() - 30;
                         $('#supermem').css('min-height', hh);
                         $('#supermem').css('max-height', hh);
-
-                        clearInterval(interval);
-                        setTimeout(() => {
-                            tick();
-                        }, 8000);
                         break;
 
                     default:
@@ -157,9 +153,9 @@ $(document).ready(() => {
 
                 if (last != data[0])
                     last = data[0]
-            });
-        }, 1000);
-    }
 
-    tick();
+                doreq = true;
+            });
+        }
+    }, 1000);
 });

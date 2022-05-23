@@ -33,8 +33,6 @@ def generate_memes(game: Game, path):
     memes = os.listdir(path)
     for m in memes:
         game.assets['cards'].append(Card(m, f'{path}/{m}'))
-        game.preload['imgpreload'] += f'<link rel="preload" href="{path}/{m}" as="image">\n'
-        game.preload['imgs'] += f'<img src="{path}/{m}" />\n'
 
 
 def generate_game(game: Game):
@@ -167,8 +165,11 @@ def server_tick():
         return jsonify([int(GameStatus.START)])
 
     elif game.status == GameStatus.ROUND_START:
+        game.last['timer'] = 6
+        game.last['endtimer'] = 6
+
         for p in game.players:
-            if len(p.cards) < game.options['cards_count']:
+            if len([c for c in p.cards if not c.used]) < game.options['cards_count']:
                 for allcard in game.assets['cards']:
                     if not allcard.owner:
                         allcard.owner = p.id
@@ -178,7 +179,8 @@ def server_tick():
         game.rounds.append({
             'caption': '',
             'picks': [],
-            'voted': []
+            'voted': [],
+            'win': ''
         })
 
         for p in game.players:
@@ -189,13 +191,12 @@ def server_tick():
 
     elif game.status == GameStatus.PICK:
         if len(game.players) == len(game.rounds[-1]['picks']):
-            if game.last['timer'] == 1:
-                game.last['timer'] = 4
+            if game.last['timer'] <= 0:
                 game.status = GameStatus.VOTE_START
 
-            if game.last['timer'] > 1:
+            if game.last['timer'] > 0:
                 game.last['timer'] -= 1
-                time.sleep(1)
+                #time.sleep(1)
 
         return jsonify([int(GameStatus.PICK), [p.serialize() for p in game.players], get_caption(), game.last['timer']])
 
@@ -217,37 +218,43 @@ def server_tick():
         return jsonify([int(GameStatus.VOTE_END), None, get_caption(), None, None, game.rounds[-1]['picks'], get_mve()])
 
     elif game.status == GameStatus.ROUND_END:
-        score = [0, '']
-        for r in game.rounds[-1]['picks']:
-            if r['points'] > score[0]:
-                score = []
-                score.append(r['points'])
-                score.append(r['id'])
-            elif score[0] == r['points']:
-                score.append(r['id'])
+        if game.rounds[-1]['win'] == '':
+            score = [0, '']
+            for r in game.rounds[-1]['picks']:
+                if r['points'] > score[0]:
+                    score = []
+                    score.append(r['points'])
+                    score.append(r['id'])
+                elif score[0] == r['points']:
+                    score.append(r['id'])
 
-        win = 'Раунд за: '
-        ppp = ''
-        for p in game.players:
-            for s in range(1, len(score)):
-                if p.id == score[s]:
-                    for r in game.rounds[-1]['picks']:
-                        if r['id'] == p.id:
-                            format = r['card'].split('.')
-                            format = format[len(format) - 1]
+            win = 'Раунд за: '
+            ppp = ''
+            for p in game.players:
+                for s in range(1, len(score)):
+                    if p.id == score[s]:
+                        for r in game.rounds[-1]['picks']:
+                            if r['id'] == p.id:
+                                format = r['card'].split('.')
+                                format = format[len(format) - 1]
 
-                            points = 1
-                            if (format == 'gif'):
-                                points = 2
+                                points = 1
+                                if (format == 'gif'):
+                                    points = 2
 
-                            ppp = r['fullpath']
-                            p.points += points
-                            win += f'{p.name} +{points};'
-                            break
+                                ppp = r['fullpath']
+                                p.points += points
+                                win += f'{p.name} +{points};'
+                                break
 
-        win += f'|||<img src="{ppp}" id="supermem" style="margin-left: 50px;">'
-        game.status = GameStatus.ROUND_START
-        return jsonify([int(GameStatus.ROUND_END), None, get_caption(), None, None, game.rounds[-1]['picks'], None, win])
+            win += f'|||<img src="{ppp}" id="supermem" style="margin-left: 50px;">'
+            game.rounds[-1]['win'] = win
+
+        if game.last['endtimer'] <= 0:
+            game.status = GameStatus.ROUND_START
+        game.last['endtimer'] -= 1
+
+        return jsonify([int(GameStatus.ROUND_END), None, get_caption(), None, None, game.rounds[-1]['picks'], None, game.rounds[-1]['win']])
 
     elif game.status == GameStatus.FINISHED:
         pass
@@ -309,12 +316,12 @@ def send_card(id=None, card=None):
 
     player = get_player(game, id)
 
-    if id and card:
+    if id and card and player:
         for c in player.cards:
             if c.path == card:
                 for rp in game.rounds[-1]['picks']:
                     if rp['id'] == id:
-                        return redirect('/')
+                        return redirect('/join?clear=true')
 
                 game.rounds[-1]['picks'].append({
                     'id': id,
@@ -330,7 +337,7 @@ def send_card(id=None, card=None):
 
         return redirect('/join?clear=true')
     else:
-        return redirect('/')
+        return redirect('/join?clear=true')
 
 
 @app.route('/sendvote')
@@ -358,7 +365,7 @@ def sendvote(id=None, vid=None):
 
         return redirect(f'/client?id={player.id}')
     else:
-        return redirect('/')
+        return redirect('/join?clear=true')
 
 
 @app.route('/clienttick')
@@ -377,7 +384,7 @@ def client_tick(id=None, card=None):
         return jsonify([int(PlayerStatus.CONNECTED)])
 
     elif player.status == PlayerStatus.SHOULD_PICK:
-        return jsonify([int(PlayerStatus.SHOULD_PICK), [c.serialize() for c in player.cards]])  # client.html
+        return jsonify([int(PlayerStatus.SHOULD_PICK), [c.serialize() for c in player.cards if not c.used]])  # client.html
 
     elif player.status == PlayerStatus.PICKED:
         if card is None:
@@ -386,10 +393,7 @@ def client_tick(id=None, card=None):
         if id and card:
             for c in player.cards:
                 if c.fullpath == card:
-                    for pc in range(0, len(player.cards)):
-                        if player.cards[pc].fullpath == card:
-                            del player.cards[pc]
-                            break
+                    c.used = True
 
                     return jsonify([int(PlayerStatus.PICKED), c.fullpath])  # show.html
 

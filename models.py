@@ -15,6 +15,7 @@ class GameStatus(IntEnum):
 
 
 class PlayerStatus(IntEnum):
+    DISCONNECTED = 0,
     CONNECTED = 1,
     SHOULD_PICK = 2,
     PICKED = 3,
@@ -47,6 +48,7 @@ class Card:
         self.fullpath = fullpath
         self.path = path
         self.owner = None
+        self.used = False
 
     def serialize(self):
         return {
@@ -64,11 +66,6 @@ class Game:
             'cards_count': 10,
             'tracktime': 0
         }
-        self.preload = {
-            'imgpreload': '',
-            'trpreload': '',
-            'imgs': ''
-        }
         self.music = {
             'tracks': [],
             'vote_start': [],
@@ -85,7 +82,8 @@ class Game:
             'end': -1,
             'track': -1,
             'caption': -1,
-            'timer': 4
+            'timer': 0,
+            'endtimer': 0
         }
 
     def serialize(self):
