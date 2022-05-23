@@ -61,7 +61,8 @@ class Game:
         self.id = shortuuid.uuid()
         self.status = GameStatus.NOT_STARTED
         self.options = {
-            'cards_count': 10
+            'cards_count': 10,
+            'tracktime': 0
         }
         self.preload = {
             'imgpreload': '',

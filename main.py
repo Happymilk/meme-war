@@ -90,12 +90,14 @@ def get_mve():  # vote end music
 def get_mvt():  # background music
     game = get_game()
 
-    return f'./static/music/back/{game.music["tracks"][game.last["track"]]}'
+    return jsonify(f'./static/music/back/{game.music["tracks"][game.last["track"]]}', game.options['tracktime'])
 
 
 @app.route('/nextmvt')
 def get_nextmvt():  # next track
     game = get_game()
+
+    game.options['tracktime'] = 0
 
     game.last['track'] += 1
     if game.last['track'] >= len(game.music['tracks']):
@@ -112,6 +114,18 @@ def gj():
 
 
 # Server logic #
+@app.route('/savetime')
+def savetime(timee=None):
+    game = get_game()
+
+    if timee is None:
+        timee = request.args.get('timee')
+
+    game.options['tracktime'] = timee
+
+    return jsonify(True)
+
+
 @app.route('/start')
 def start(cc=None):
     game = get_game()
@@ -171,7 +185,7 @@ def server_tick():
             p.status = PlayerStatus.SHOULD_PICK
 
         game.status = GameStatus.PICK
-        return jsonify([int(GameStatus.ROUND_START), get_caption(), [p.serialize() for p in game.players]])
+        return jsonify([int(GameStatus.ROUND_START), [p.serialize() for p in game.players], get_caption()])
 
     elif game.status == GameStatus.PICK:
         if len(game.players) == len(game.rounds[-1]['picks']):
@@ -183,24 +197,24 @@ def server_tick():
                 game.last['timer'] -= 1
                 time.sleep(1)
 
-        return jsonify([int(GameStatus.PICK), game.last['timer']])
+        return jsonify([int(GameStatus.PICK), [p.serialize() for p in game.players], get_caption(), game.last['timer']])
 
     elif game.status == GameStatus.VOTE_START:
         for p in game.players:
             p.status = PlayerStatus.SHOULD_VOTE
 
         game.status = GameStatus.VOTE
-        return jsonify([int(GameStatus.VOTE_START), get_mvs()])
+        return jsonify([int(GameStatus.VOTE_START), [p.serialize() for p in game.players], get_caption(), None, get_mvs()])
 
     elif game.status == GameStatus.VOTE:
         if len(game.rounds[-1]['voted']) == len(game.players):
             game.status = GameStatus.VOTE_END
 
-        return jsonify([int(GameStatus.VOTE), game.rounds[-1]['picks']])
+        return jsonify([int(GameStatus.VOTE), None, get_caption(), None, get_mvs(), game.rounds[-1]['picks']])
 
     elif game.status == GameStatus.VOTE_END:
         game.status = GameStatus.ROUND_END
-        return jsonify([int(GameStatus.VOTE_END), get_mve()])
+        return jsonify([int(GameStatus.VOTE_END), None, get_caption(), None, None, game.rounds[-1]['picks'], get_mve()])
 
     elif game.status == GameStatus.ROUND_END:
         score = [0, '']
@@ -233,7 +247,7 @@ def server_tick():
 
         win += f'|||<img src="{ppp}" id="supermem" style="margin-left: 50px;">'
         game.status = GameStatus.ROUND_START
-        return jsonify([int(GameStatus.ROUND_END), win])
+        return jsonify([int(GameStatus.ROUND_END), None, get_caption(), None, None, game.rounds[-1]['picks'], None, win])
 
     elif game.status == GameStatus.FINISHED:
         pass

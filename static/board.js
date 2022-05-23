@@ -3,13 +3,20 @@ $(document).ready(() => {
         last = -1;
     let interval;
 
+    window.onbeforeunload = function(event) {
+        let audio = document.getElementById('main');
+        $.get(`/savetime?timee=${audio.currentTime}`).done();
+    };
+
     $.get('/mvt').done((data) => {
-        $('#mvt').html(`<audio autoplay controls src="${data}" id="main"></audio> `);
+        $('#mvt').html(`<audio autoplay controls src="${data[0]}" id="main"></audio> `);
+        let audio = document.getElementById('main');
+        audio.currentTime = data[1]
     });
 
     $('#next').click(() => {
         $.get('/nextmvt').done((data) => {
-            $('#mvt').html(`<audio autoplay controls src="${data}" id="main"></audio> `);
+            $('#mvt').html(`<audio autoplay controls src="${data[0]}" id="main"></audio> `);
         });
     });
 
@@ -29,6 +36,40 @@ $(document).ready(() => {
         $('#cardscap').show();
     }
 
+    function setplayers(list, mode = 0) {
+        let title = '';
+        if (mode == 0)
+            title = 'Игроки';
+        else
+            title = 'Голоса';
+
+        if (mode == 1 || (players.length != list.length && mode == 0)) {
+            players = list;
+            let in_text = `<table><th><h1>${title}:</h1></th>`;
+            for (let i = 0; i < list.length; i++) {
+                in_text += `<tr><td><h1>${list[i].name}</h1></td><td style="padding-left: 20px;"><h1>${list[i].points}</h1></td></tr>`;
+            }
+            in_text += '</table>'
+            $('#players').html(in_text);
+        }
+    }
+
+    function setcaption(cap) {
+        $('#caption').html(`${cap}`);
+    }
+
+    function setmvp(mvp) {
+        $('#mvp').html(`<audio autoplay controls src="${mvp}" id='mvpm' onpause='$("#main").trigger("play");'></audio>`);
+        setTimeout(() => {
+            $('#main').trigger("pause");
+        }, 200);
+    }
+
+    function checkescape(data) {
+        if (last == data[0])
+            return;
+    }
+
     function tick() {
         interval = setInterval(() => {
             $.get('/servertick').done((data) => {
@@ -38,16 +79,7 @@ $(document).ready(() => {
                         break;
                     case 0:
                         show();
-                        if (players.length != data[1].length) {
-                            players = data[1];
-                            let in_text = "<table><th><h1>Игроки:</h1></th>";
-                            for (let i = 0; i < data[1].length; i++) {
-                                e = data[1][i];
-                                in_text += `<tr><td><h1>${e.name}</h1></td><td style="padding-left: 20px;"><h1>${e.points}</h1></td></tr>`;
-                            }
-                            in_text += '</table>'
-                            $('#players').html(in_text);
-                        }
+                        setplayers(data[1]);
                         break;
 
                     case 1:
@@ -55,65 +87,56 @@ $(document).ready(() => {
                         break;
 
                     case 2:
-                        if (last == data[0])
-                            return
+                        checkescape(data);
 
                         hide();
                         $('#mem').html('');
                         $('#roundhead').html('');
-                        $('#caption').html(`${data[1]}`);
-                        let in_text = "<table><th><h1>Игроки:</h1></th>";
-                        data[2].forEach(e => {
-                            in_text += `<tr><td><h1>${e.name}</h1></td><td style="padding-left: 20px;"><h1>${e.points}</h1></td></tr>`;
-                        });
-                        in_text += '</table>'
-                        $('#players').html(in_text);
+                        setplayers(data[1]);
+                        setcaption(data[2]);
                         break;
 
                     case 3:
                         hide();
-                        if (data[1] != 4)
-                            $('#mvp').html(`${data[1]}`);
+                        setplayers(data[1]);
+                        setcaption(data[2]);
+                        if (data[3] != 4)
+                            $('#mvp').html(`${data[3]}`);
                         else
                             $('#mvp').html('');
                         break;
 
                     case 4:
-                        if (last == data[0])
-                            return
+                        checkescape(data);
 
                         hide();
-                        $('#mvp').html(`<audio autoplay controls src="${data[1]}" id='mvpm' onpause='$("#main").trigger("play");'></audio>`);
-                        $('#main').trigger("pause");
+                        setplayers(data[1]);
+                        setcaption(data[2]);
+                        setmvp(data[4]);
                         break;
 
                     case 5:
                         hide();
-                        let iin_text = "<table><th><h1>Голоса:</h1></th>";
-                        data[1].forEach(e => {
-                            iin_text += `<tr><td><h1>${e['name']}</h1></td><td style="padding-left: 20px;"><h1>${e.points}</h1></td></tr>`;
-                        });
-                        iin_text += '</table>'
-                        $('#players').html(iin_text);
+                        setcaption(data[2]);
+                        setplayers(data[5], 1);
                         break;
 
                     case 6:
-                        if (last == data[0])
-                            return
+                        checkescape(data);
 
                         hide();
-                        $('#mvp').html(`<audio autoplay controls src="${data[1]}" id='mvpm' onpause='$("#main").trigger("play");'></audio>`);
-                        setTimeout(() => {
-                            $('#main').trigger("pause");
-                        }, 200);
+                        setcaption(data[2]);
+                        setplayers(data[5], 1);
+                        setmvp(data[6]);
                         break;
 
                     case 7:
-                        if (last == data[0])
-                            return
+                        checkescape(data);
 
                         hide();
-                        let res = data[1].split('|||');
+                        setcaption(data[2]);
+                        setplayers(data[5], 1);
+                        let res = data[7].split('|||');
                         $('#roundhead').html(res[0]);
                         $('#mem').html(res[1]);
 
