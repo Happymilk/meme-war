@@ -73,89 +73,91 @@ $(document).ready(() => {
     setInterval(() => {
         if (doreq) {
             doreq = false;
-            $.get('/servertick').done((data) => {
-                switch (data[0]) {
-                    case -1:
-                        location.href = '/create'
-                        break;
-                    case 0:
-                        show();
-                        setplayers(data[1]);
-                        break;
+            $.get('/servertick')
+                .always(() => {
+                    doreq = true;
+                })
+                .done((data) => {
+                    switch (data[0]) {
+                        case -1:
+                            location.href = '/create'
+                            break;
+                        case 0:
+                            show();
+                            setplayers(data[1]);
+                            break;
 
-                    case 1:
-                        hide();
-                        break;
+                        case 1:
+                            hide();
+                            break;
 
-                    case 2:
-                        checkescape(data);
+                        case 2:
+                            checkescape(data);
 
-                        hide();
-                        $('#mem').html('');
-                        $('#roundhead').html('');
-                        setplayers(data[1]);
-                        setcaption(data[2]);
-                        break;
-
-                    case 3:
-                        hide();
-                        setplayers(data[1]);
-                        setcaption(data[2]);
-                        if (data[3] != 6)
-                            $('#mem').html(`${data[3]}`);
-                        else
+                            hide();
                             $('#mem').html('');
-                        break;
+                            $('#roundhead').html('');
+                            setplayers(data[1]);
+                            setcaption(data[2]);
+                            break;
 
-                    case 4:
-                        checkescape(data);
+                        case 3:
+                            hide();
+                            setplayers(data[1]);
+                            setcaption(data[2]);
+                            if (data[3] != 6)
+                                $('#mem').html(`${data[3]}`);
+                            else
+                                $('#mem').html('');
+                            break;
 
-                        hide();
-                        setplayers(data[1]);
-                        setcaption(data[2]);
-                        setmvp(data[4]);
-                        break;
+                        case 4:
+                            checkescape(data);
 
-                    case 5:
-                        hide();
-                        setcaption(data[2]);
-                        setplayers(data[5], 1);
-                        break;
+                            hide();
+                            setplayers(data[1]);
+                            setcaption(data[2]);
+                            setmvp(data[4]);
+                            break;
 
-                    case 6:
-                        checkescape(data);
+                        case 5:
+                            hide();
+                            setcaption(data[2]);
+                            setplayers(data[5], 1);
+                            break;
 
-                        hide();
-                        setcaption(data[2]);
-                        setplayers(data[5], 1);
-                        setmvp(data[6]);
-                        break;
+                        case 6:
+                            checkescape(data);
 
-                    case 7:
-                        checkescape(data);
+                            hide();
+                            setcaption(data[2]);
+                            setplayers(data[5], 1);
+                            setmvp(data[6]);
+                            break;
 
-                        hide();
-                        setcaption(data[2]);
-                        setplayers(data[5], 1);
-                        let res = data[7].split('|||');
-                        $('#roundhead').html(res[0]);
-                        $('#mem').html(res[1]);
+                        case 7:
+                            checkescape(data);
 
-                        $('#supermem').css('min-width', 'unset');
-                        let hh = $(window).height() - $('#head').height() - $('#roundhead').height() - $('#capthead').height() - 30;
-                        $('#supermem').css('min-height', hh);
-                        $('#supermem').css('max-height', hh);
-                        break;
+                            hide();
+                            setcaption(data[2]);
+                            setplayers(data[5], 1);
+                            let res = data[7].split('|||');
+                            $('#roundhead').html(res[0]);
+                            $('#mem').html(res[1]);
 
-                    default:
-                        break;
-                }
+                            $('#supermem').css('min-width', 'unset');
+                            let hh = $(window).height() - $('#head').height() - $('#roundhead').height() - $('#capthead').height() - 30;
+                            $('#supermem').css('min-height', hh);
+                            $('#supermem').css('max-height', hh);
+                            break;
 
-                if (last != data[0])
-                    last = data[0]
+                        default:
+                            break;
+                    }
 
-                doreq = true;
-            });
+                    if (last != data[0])
+                        last = data[0]
+                });
         }
     }, 1000);
 });

@@ -1,4 +1,3 @@
-import time
 import traceback
 import sys
 import os
@@ -196,7 +195,6 @@ def server_tick():
 
             if game.last['timer'] > 0:
                 game.last['timer'] -= 1
-                #time.sleep(1)
 
         return jsonify([int(GameStatus.PICK), [p.serialize() for p in game.players], get_caption(), game.last['timer']])
 
@@ -235,11 +233,8 @@ def server_tick():
                     if p.id == score[s]:
                         for r in game.rounds[-1]['picks']:
                             if r['id'] == p.id:
-                                format = r['card'].split('.')
-                                format = format[len(format) - 1]
-
                                 points = 1
-                                if (format == 'gif'):
+                                if r['fullpath'].find('./static/memes/gif/') > -1:
                                     points = 2
 
                                 ppp = r['fullpath']
@@ -334,6 +329,37 @@ def send_card(id=None, card=None):
                 player.status = PlayerStatus.PICKED
 
                 return redirect(f'/client?id={player.id}&card={c.fullpath}')
+
+        return redirect('/join?clear=true')
+    else:
+        return redirect('/join?clear=true')
+
+
+@app.route('/revert')
+def revert(id=None, card=None):
+    game = get_game()
+
+    if id is None:
+        id = request.args.get('id')
+        card = request.args.get('card')
+
+    player = get_player(game, id)
+
+    if id and card and player and game.status == GameStatus.PICK:
+        for c in player.cards:
+            if c.fullpath == card:
+                for i in range(0, len(game.rounds[-1]['picks'])):
+                    if game.rounds[-1]['picks'][i]['id'] == id:
+                        del game.rounds[-1]['picks'][i]
+                        break
+
+                c.used = False
+
+                player.status = PlayerStatus.SHOULD_PICK
+
+                game.last['timer'] = 6
+
+                return redirect(f'/client?id={player.id}')
 
         return redirect('/join?clear=true')
     else:

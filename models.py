@@ -54,7 +54,8 @@ class Card:
         return {
             'fullpath': self.fullpath,
             'path': self.path,
-            'owner': self.owner
+            'owner': self.owner,
+            'used': self.used
         }
 
 
