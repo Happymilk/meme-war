@@ -268,12 +268,16 @@ def server_tick():
 
 # Client logic #
 @app.route('/join')
-def join(name=None, id=None):
+def join(name=None, id=None, motivs=None):
     game = get_game()
+
+    if game is None:
+        return redirect('/')
 
     if name is None:
         name = request.args.get('name')
         id = request.args.get('id')
+        motivs = request.args.get('motivs')
 
     if request.args.get('clear'):
         text = '<option value="-1">Вот и я её не вижу, а она есть</option>'
@@ -290,23 +294,11 @@ def join(name=None, id=None):
 
             player = Player(name)
             game.players.append(player)
+            game.players[-1].motiv = motivs
             return redirect(f'/client?id={player.id}')
         else:
             for p in game.players:
                 if p.name == name:
-                    return redirect(f'/client?id={p.id}')
-
-            return redirect('/join?clear=true')
-    elif id:
-        if game.status == GameStatus.NOT_STARTED:
-            for p in game.players:
-                if p.id == id:
-                    return redirect(f'/client?id={p.id}')
-
-            return redirect('/join?clear=true')
-        else:
-            for p in game.players:
-                if p.id == id:
                     return redirect(f'/client?id={p.id}')
 
             return redirect('/join?clear=true')
@@ -429,6 +421,18 @@ def sendvote(id=None, vid=None):
         return redirect(f'/client?id={player.id}')
     else:
         return redirect('/join?clear=true')
+
+
+@app.route('/background')
+def background(id=None):
+    game = get_game()
+
+    if id is None:
+        id = request.args.get('id')
+
+    player = get_player(game, id)
+
+    return player.motiv
 
 
 @app.route('/clienttick')

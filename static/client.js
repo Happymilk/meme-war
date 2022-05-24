@@ -30,8 +30,26 @@ $(document).ready(() => {
     }
 
     let id;
-    let last = -1,
+    let last = -1, 
+        percent = 0
+        dir = 0,
         doreq = true;
+
+        setInterval(() => {
+            if (dir == 0)
+                if (percent == -200)
+                    dir = 1
+                else 
+                    percent--;
+            else
+                if (percent == 0)
+                    dir = 0
+                else
+                    percent++;
+
+            document.getElementById("background").style.top = `${percent}%`
+            document.getElementById("background").style.left = `${percent}%`
+        }, 75);
 
     if (document.cookie == '') {
         id = (new URLSearchParams(window.location.search)).get('id');
@@ -44,6 +62,13 @@ $(document).ready(() => {
         if (id == undefined)
             location.href = `/`;
     }
+
+    $.get(`/background${window.location.search}`).done((data) => {
+        if (this.value != '-1') 
+            document.getElementById("background").style.backgroundImage = `url('${data}')`;
+        else
+            document.getElementById("background").style.backgroundImage = 'none';
+    });
 
     setInterval(() => {
         if (doreq) {

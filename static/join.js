@@ -24,6 +24,25 @@ $(document).ready(() => {
             location.href = `/client?id=${user}`;
     }
 
+    let percent = 0,
+        dir = 0;
+
+    setInterval(() => {
+        if (dir == 0)
+            if (percent == -200)
+                dir = 1
+            else 
+                percent--;
+        else
+            if (percent == 0)
+                dir = 0
+            else
+                percent++;
+
+        document.getElementById("background").style.top = `${percent}%`
+        document.getElementById("background").style.left = `${percent}%`
+    }, 75);
+
     $("#motivs").change(function () {
         if (this.value != '-1')
             document.getElementById("background").style.backgroundImage = `url('${this.value}')`;

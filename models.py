@@ -32,6 +32,7 @@ class Player:
         self.points = 0
         self.status = PlayerStatus.CONNECTED
         self.cards = []
+        self.motiv = '-1'
 
     def serialize(self):
         return {
