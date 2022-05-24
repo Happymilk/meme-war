@@ -335,6 +335,31 @@ def send_card(id=None, card=None):
         return redirect('/join?clear=true')
 
 
+@app.route('/newcards')
+def new_cards(id=None):
+    game = get_game()
+
+    if id is None:
+        id = request.args.get('id')
+
+    player = get_player(game, id)
+
+    if id and player:
+        player.cards = []
+        for _ in range(0, game.options['cards_count']):
+            for c in game.assets['cards']:
+                if not c.owner:
+                    c.owner = player.id
+                    player.cards.append(c)
+                    break
+
+            return redirect(f'/client?id={player.id}')
+
+        return redirect('/join?clear=true')
+    else:
+        return redirect('/join?clear=true')
+
+
 @app.route('/revert')
 def revert(id=None, card=None):
     game = get_game()
