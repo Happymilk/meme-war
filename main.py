@@ -38,6 +38,7 @@ def generate_game(game: Game):
     game.music['vote_start'] = os.listdir('./static/music/vote/start')
     game.music['vote_end'] = os.listdir('./static/music/vote/end')
     game.music['tracks'] = os.listdir('./static/music/back')
+    random.shuffle(game.music['tracks'])
 
     generate_memes(game, './static/memes/gif')
     generate_memes(game, './static/memes/img')
@@ -346,6 +347,7 @@ def new_cards(id=None):
 
     if id and player:
         player.cards = []
+        player.points -= 1
         for _ in range(0, game.options['cards_count']):
             for c in game.assets['cards']:
                 if not c.owner:
@@ -353,9 +355,7 @@ def new_cards(id=None):
                     player.cards.append(c)
                     break
 
-            return redirect(f'/client?id={player.id}')
-
-        return redirect('/join?clear=true')
+        return redirect(f'/client?id={player.id}')
     else:
         return redirect('/join?clear=true')
 

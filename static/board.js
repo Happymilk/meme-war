@@ -43,7 +43,7 @@ $(document).ready(() => {
         else
             title = 'Голоса';
 
-        if (mode == 1 || (players.length != list.length && mode == 0)) {
+        if (list.length > 0) {
             players = list;
             let in_text = `<table><th><h1>${title}:</h1></th>`;
             for (let i = 0; i < list.length; i++) {

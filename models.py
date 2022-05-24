@@ -72,6 +72,10 @@ class Game:
             'vote_start': [],
             'vote_end': []
         }
+        self.motivation = {
+            'pics': [],
+            'names': []
+        }
         self.assets = {
             'cards': [],
             'captions': []
