@@ -75,19 +75,11 @@ def get_caption():
 def get_mvs():  # vote start music
     game = get_game()
 
-    game.last['start'] += 1
-    if game.last['start'] >= len(game.music['vote_start']):
-        game.last['start'] = 0
-
     return f'./static/music/vote/start/{game.music["vote_start"][game.last["start"]]}'
 
 
 def get_mve():  # vote end music
     game = get_game()
-
-    game.last['end'] += 1
-    if game.last['end'] >= len(game.music['vote_end']):
-        game.last['end'] = 0
 
     return f'./static/music/vote/end/{game.music["vote_end"][game.last["end"]]}'
 
@@ -211,6 +203,10 @@ def server_tick():
         for p in game.players:
             p.status = PlayerStatus.SHOULD_VOTE
 
+        game.last['start'] += 1
+        if game.last['start'] >= len(game.music['vote_start']):
+            game.last['start'] = 0
+
         game.status = GameStatus.VOTE
         return jsonify([int(GameStatus.VOTE_START), [p.serialize() for p in game.players], get_caption(), None, get_mvs()])
 
@@ -222,6 +218,11 @@ def server_tick():
 
     elif game.status == GameStatus.VOTE_END:
         game.status = GameStatus.ROUND_END
+
+        game.last['end'] += 1
+        if game.last['end'] >= len(game.music['vote_end']):
+            game.last['end'] = 0
+
         return jsonify([int(GameStatus.VOTE_END), None, get_caption(), None, None, game.rounds[-1]['picks'], get_mve()])
 
     elif game.status == GameStatus.ROUND_END:
@@ -509,6 +510,10 @@ def index():
 @app.route('/rules')
 def rules():
     return render_template('rules.html')
+
+@app.route('/undefined')
+def undef():
+    return ''
 
 
 # Main method #

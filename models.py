@@ -40,7 +40,8 @@ class Player:
             'name': self.name,
             'status': self.status,
             'points': self.points,
-            'cards': [c.serialize() for c in self.cards]
+            'cards': [c.serialize() for c in self.cards],
+            'motiv': self.motiv
         }
 
 

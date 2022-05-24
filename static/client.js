@@ -59,12 +59,17 @@ $(document).ready(() => {
             location.href = '/';
     } else {
         id = getCookie('user');
-        if (id == undefined)
-            location.href = `/`;
+        if (id == undefined) {
+            id = (new URLSearchParams(window.location.search)).get('id');
+            if (id != null)
+                setCookie('user', id, { 'max-age': 432000 });
+            else
+                location.href = '/';
+        }
     }
 
     $.get(`/background${window.location.search}`).done((data) => {
-        if (this.value != '-1') 
+        if (data != '-1') 
             document.getElementById("background").style.backgroundImage = `url('${data}')`;
         else
             document.getElementById("background").style.backgroundImage = 'none';

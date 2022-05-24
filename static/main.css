@@ -411,7 +411,7 @@ audio:not([src])+button,
 }
 
 @supports (-webkit-text-stroke: 5px black) {
-    h1 {
+    h1, h2 {
         -webkit-text-stroke: 2px black;
     }
     * {
@@ -420,7 +420,7 @@ audio:not([src])+button,
     }
 }
 
-h1 {
+h1, h2 {
     font-size: 60px;
 }
 
@@ -487,7 +487,7 @@ audio {
 }
 
 div {
-    border: 1px solid;
+    /*border: 1px solid;*/
 }
 
 input[type=number]::-webkit-inner-spin-button {

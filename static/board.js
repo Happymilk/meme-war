@@ -1,22 +1,32 @@
 $(document).ready(() => {
     let players = [],
         last = -1,
-        doreq = true;
+        doreq = true,
+        caption = '';
 
     window.onbeforeunload = function(event) {
         let audio = document.getElementById('main');
         $.get(`/savetime?timee=${audio.currentTime}`).done();
     };
 
+    document.getElementById("here").style.height = `${window.innerHeight - 110}px`;
+    $(window).resize(() => {
+        document.getElementById("here").style.height = `${window.innerHeight - 110}px`;
+    });
+
     $.get('/mvt').done((data) => {
-        $('#mvt').html(`<audio autoplay controls src="${data[0]}" id="main"></audio> `);
+        $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
         let audio = document.getElementById('main');
         audio.currentTime = data[1]
     });
 
     $('#next').click(() => {
+        $('#next')[0].className = '';
+        setTimeout(() => {
+            $("#next").addClass('animate__animated animate__flip');
+        }, 200);
         $.get('/nextmvt').done((data) => {
-            $('#mvt').html(`<audio autoplay controls src="${data[0]}" id="main"></audio> `);
+            $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
         });
     });
 
@@ -25,15 +35,25 @@ $(document).ready(() => {
     });
 
     function hide() {
-        $('#start').hide();
-        $('#cards').hide();
-        $('#cardscap').hide();
+        $('#start').addClass('animate__animated animate__fadeOutRight');
+        $('#cards').addClass('animate__animated animate__fadeOutRight');
+        $('#cardscap').addClass('animate__animated animate__fadeOutRight');
+        setTimeout(() => {
+            $('#start').hide();
+            $('#cards').hide();
+            $('#cardscap').hide();
+        }, 1000);
     }
 
     function show() {
-        $('#start').show();
-        $('#cards').show();
-        $('#cardscap').show();
+        $('#start').addClass('animate__animated animate__fadeInRight');
+        $('#cards').addClass('animate__animated animate__fadeInRight');
+        $('#cardscap').addClass('animate__animated animate__fadeInRight');
+        setTimeout(() => {
+            $('#start').show();
+            $('#cards').show();
+            $('#cardscap').show();
+        }, 1000);
     }
 
     function setplayers(list, mode = 0) {
@@ -44,22 +64,31 @@ $(document).ready(() => {
             title = 'Голоса';
 
         if (list.length > 0) {
-            players = list;
-            let in_text = `<table><th><h1>${title}:</h1></th>`;
-            for (let i = 0; i < list.length; i++) {
-                in_text += `<tr><td><h1>${list[i].name}</h1></td><td style="padding-left: 20px;"><h1>${list[i].points}</h1></td></tr>`;
+            if (JSON.stringify(players) != JSON.stringify(list)) {
+                players = list;
+                let in_text = `<div class="animate__animated animate__fadeIn"><h1>${title}:</h1>`;
+                for (let i = 0; i < list.length; i++) {
+                    in_text += `<div class="flex" style="background-size: contain; background-image: url(${list[i].motiv})"><div style="min-width: 75%; max-width: 75%; word-break: break-word;"><h1 id="nick${i}" style="vertical-align: middle; line-height: 90px;">${list[i].name}</h1></div><div style="padding-left: 20px; min-width: 25%; max-width: 25%;"><h1>${list[i].points}</h1></div></div>`;
+                }
+                in_text += '</div>'
+                $('#players').html(in_text);
             }
-            in_text += '</table>'
-            $('#players').html(in_text);
         }
     }
 
     function setcaption(cap) {
-        $('#caption').html(`${cap}`);
+        if (caption != cap) {
+            caption = cap;
+            $('#caption')[0].className = '';
+            setTimeout(() => {
+                $("#caption").addClass('animate__animated animate__lightSpeedInRight');
+                $('#caption').html(`${cap}`);
+            }, 200);
+        }
     }
 
-    function setmvp(mvp) {
-        $('#mvp').html(`<audio autoplay controls src="${mvp}" id='mvpm' onpause='$("#main").trigger("play");'></audio>`);
+    function setmvp(mvp, mode=0) {
+        $('#mvp').html(`<audio class="animate__animated animate__fadeInDown" autoplay controls src="${mvp}" id='mvpm' onpause='$("#main").trigger("play");'></audio>`);
         setTimeout(() => {
             $('#main').trigger("pause");
         }, 200);
@@ -99,15 +128,23 @@ $(document).ready(() => {
                             $('#roundhead').html('');
                             setplayers(data[1]);
                             setcaption(data[2]);
+                            try {
+                            $('#mvpm')[0].className = '';
+                            } catch {}
+                            setTimeout(() => {
+                                $("#mvpm").addClass('animate__animated animate__fadeOutUp');
+                            }, 200);
                             break;
 
                         case 3:
                             hide();
                             setplayers(data[1]);
                             setcaption(data[2]);
-                            if (data[3] != 6)
-                                $('#mem').html(`${data[3]}`);
-                            else
+                            if (data[3] != 6) {
+                                $('#mem').html(`<div class="animate__animated animate__jackInTheBox" id="supertimer" style="font-size: 300px;">${data[3]}</div>`);
+                                if (data[3] == 0)
+                                    $('#supertimer').hide();
+                            } else
                                 $('#mem').html('');
                             break;
 
@@ -146,13 +183,27 @@ $(document).ready(() => {
                             $('#mem').html(res[1]);
 
                             $('#supermem').css('min-width', 'unset');
-                            let hh = $(window).height() - $('#head').height() - $('#roundhead').height() - $('#capthead').height() - 30;
+                            let hh = $(window).height() - $('#head').height() - $('#roundhead').height() - $('#caption').height() - 30;
                             $('#supermem').css('min-height', hh);
                             $('#supermem').css('max-height', hh);
                             break;
 
                         default:
                             break;
+                    }
+
+                    let h1s = document.getElementsByTagName('h1');
+                    for (let i = 0; i < h1s.length; i++) {
+                        if (h1s[i].clientHeight > 90) { 
+                            h1s[i].style.fontSize = `${60 / (h1s[i].clientHeight / 90)}px`; 
+                        }
+                    }
+
+                    let h2s = document.getElementsByTagName('h2');
+                    for (let i = 0; i < h2s.length; i++) {
+                        if (h2s[i].clientHeight > 180) { 
+                            h2s[i].style.fontSize = `${60 / (h1s[i].clientHeight / 180)}px`; 
+                        }
                     }
 
                     if (last != data[0])
