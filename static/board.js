@@ -14,10 +14,65 @@ $(document).ready(() => {
         document.getElementById("here").style.height = `${window.innerHeight - 110}px`;
     });
 
+    function rennnder(audio) {
+        var context = new AudioContext();
+        var src = context.createMediaElementSource(audio);
+        var analyser = context.createAnalyser();
+
+        var canvas = document.getElementById("canvas");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        var ctx = canvas.getContext("2d");
+
+        src.connect(analyser);
+        analyser.connect(context.destination);
+
+        analyser.fftSize = 256;
+
+        var bufferLength = analyser.frequencyBinCount;
+        console.log(bufferLength);
+
+        var dataArray = new Uint8Array(bufferLength);
+
+        var WIDTH = canvas.width;
+        var HEIGHT = canvas.height;
+
+        var barWidth = (WIDTH / bufferLength) * 2.5;
+        var barHeight;
+        var x = 0;
+
+        function renderFrame() {
+            requestAnimationFrame(renderFrame);
+
+            x = 0;
+
+            analyser.getByteFrequencyData(dataArray);
+
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+            for (var i = 0; i < bufferLength; i++) {
+                barHeight = dataArray[i];
+
+                var r = barHeight + (25 * (i / bufferLength));
+                var g = 250 * (i / bufferLength);
+                var b = 50;
+
+                ctx.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
+                ctx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
+
+                x += barWidth + 1;
+            }
+        }
+
+        renderFrame();
+    }
+
     $.get('/mvt').done((data) => {
         $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
         let audio = document.getElementById('main');
-        audio.currentTime = data[1]
+        audio.currentTime = data[1];
+        rennnder(audio);
     });
 
     $('#next').click(() => {
@@ -27,6 +82,8 @@ $(document).ready(() => {
         }, 200);
         $.get('/nextmvt').done((data) => {
             $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
+            let audio = document.getElementById('main');
+            rennnder(audio);
         });
     });
 
@@ -68,7 +125,10 @@ $(document).ready(() => {
                 players = list;
                 let in_text = `<div class="animate__animated animate__fadeIn"><h1>${title}:</h1>`;
                 for (let i = 0; i < list.length; i++) {
-                    in_text += `<div class="flex" style="background-size: contain; background-image: url(${list[i].motiv})"><div style="min-width: 75%; max-width: 75%; word-break: break-word;"><h1 id="nick${i}" style="vertical-align: middle; line-height: 90px;">${list[i].name}</h1></div><div style="padding-left: 20px; min-width: 25%; max-width: 25%;"><h1>${list[i].points}</h1></div></div>`;
+                    let url = 'none';
+                    if (list[i].motiv != '-1')
+                        url = list[i].motiv;
+                    in_text += `<div class="flex" style="background-size: contain; background-image: url(${url})"><div style="min-width: 75%; max-width: 75%; word-break: break-word;"><h1 id="nick${i}" style="vertical-align: middle; line-height: 90px;">${list[i].name}</h1></div><div style="padding-left: 20px; min-width: 25%; max-width: 25%;"><h1>${list[i].points}</h1></div></div>`;
                 }
                 in_text += '</div>'
                 $('#players').html(in_text);
@@ -87,7 +147,7 @@ $(document).ready(() => {
         }
     }
 
-    function setmvp(mvp, mode=0) {
+    function setmvp(mvp, mode = 0) {
         $('#mvp').html(`<audio class="animate__animated animate__fadeInDown" autoplay controls src="${mvp}" id='mvpm' onpause='$("#main").trigger("play");'></audio>`);
         setTimeout(() => {
             $('#main').trigger("pause");
@@ -129,7 +189,7 @@ $(document).ready(() => {
                             setplayers(data[1]);
                             setcaption(data[2]);
                             try {
-                            $('#mvpm')[0].className = '';
+                                $('#mvpm')[0].className = '';
                             } catch {}
                             setTimeout(() => {
                                 $("#mvpm").addClass('animate__animated animate__fadeOutUp');
@@ -194,15 +254,15 @@ $(document).ready(() => {
 
                     let h1s = document.getElementsByTagName('h1');
                     for (let i = 0; i < h1s.length; i++) {
-                        if (h1s[i].clientHeight > 90) { 
-                            h1s[i].style.fontSize = `${60 / (h1s[i].clientHeight / 90)}px`; 
+                        if (h1s[i].clientHeight > 90) {
+                            h1s[i].style.fontSize = `${60 / (h1s[i].clientHeight / 90)}px`;
                         }
                     }
 
                     let h2s = document.getElementsByTagName('h2');
                     for (let i = 0; i < h2s.length; i++) {
-                        if (h2s[i].clientHeight > 180) { 
-                            h2s[i].style.fontSize = `${60 / (h1s[i].clientHeight / 180)}px`; 
+                        if (h2s[i].clientHeight > 180) {
+                            h2s[i].style.fontSize = `${60 / (h1s[i].clientHeight / 180)}px`;
                         }
                     }
 

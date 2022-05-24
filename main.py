@@ -50,7 +50,7 @@ def generate_game(game: Game):
     game.motivation['pics'] = os.listdir('./static/memes/motivation')
     for i in range(0, len(game.motivation['pics'])):
         game.motivation['pics'][i] = f'./static/memes/motivation/{game.motivation["pics"][i]}'
-    
+
     with open("./static/memes/motivations.txt", 'r', encoding='utf8') as f:
         game.motivation['names'] = f.readlines()
         f.close()
@@ -269,7 +269,7 @@ def server_tick():
 
 # Client logic #
 @app.route('/join')
-def join(name=None, id=None, motivs=None):
+def join(name=None, motivs=None):
     game = get_game()
 
     if game is None:
@@ -277,7 +277,6 @@ def join(name=None, id=None, motivs=None):
 
     if name is None:
         name = request.args.get('name')
-        id = request.args.get('id')
         motivs = request.args.get('motivs')
 
     if request.args.get('clear'):
@@ -468,7 +467,7 @@ def client_tick(id=None, card=None):
     elif player.status == PlayerStatus.SHOULD_VOTE:
         inner = ''
         for r in game.rounds[-1]['picks']:
-            inner += f'<div class="container"><div>{r["name"]}:</div><div class="overlay" hidden id="{r["id"]}" onclick="$(\'#{r["id"]}\').hide();"><input type="button" class="overlaybtn" style="background-color: darkgreen;" onclick="location.href=\'/sendvote?id={id}&vid={r["id"]}\';" value="Выбрать" /></div><img src="{r["fullpath"]}" onclick="$(\'#{r["id"]}\').show();"/></div>'
+            inner += f'<div class="container"><div>{r["name"]}:</div><div class="overlay" hidden id="{r["id"]}" onclick="$(\'#{r["id"]}\').hide();"><input type="button" class="overlaybtn anim" onclick="location.href=\'/sendvote?id={id}&vid={r["id"]}\';" value="Выбрать" /></div><img src="{r["fullpath"]}" onclick="$(\'#{r["id"]}\').show();"/></div>'
         return jsonify([int(PlayerStatus.SHOULD_VOTE), inner])  # vote.html
 
     elif player.status == PlayerStatus.VOTED:
@@ -511,7 +510,9 @@ def index():
 def rules():
     return render_template('rules.html')
 
+
 @app.route('/undefined')
+@app.route('/none')
 def undef():
     return ''
 
@@ -520,7 +521,7 @@ def undef():
 if __name__ == '__main__':
     try:
         try:
-            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=8000)
+            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=80)
         except Exception:
             app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=10000)
     except Exception:
