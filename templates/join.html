@@ -21,10 +21,20 @@
             <input type="text" class="btn animate__animated animate__headShake" style="background-color:darkgrey;" name="name">
         </div>
         <div class="btndiv">
+            <label for="motivs">Парень в крутом костюме, кто ты без него?</label>
+        </div>
+        <div class="btndiv">
+            <select name="motivs" id="motivs">
+                {{ motivs|safe }}
+            </select>
+        </div>
+        <div class="btndiv">
             <input type="submit" class="btn" style="background-color: darkgreen;" value="Войти" />
         </div>
         <script type="text/javascript" src="/static/join.js"></script>
     </form>
+    <div style="display: flex;position: fixed; min-width: 100%; MIN-HEIGHT: 100%; z-index: -1; top: 0px; background-color: rgba(255, 255, 255, 0.5);"></div>
+    <div id="background" style="display: flex;position: fixed; min-width: 100%; MIN-HEIGHT: 100%; z-index: -2; top: 0px;"></div>
 </body>
 
 </html>

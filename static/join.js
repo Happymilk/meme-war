@@ -23,4 +23,11 @@ $(document).ready(() => {
         if (user != undefined)
             location.href = `/client?id=${user}`;
     }
+
+    $("#motivs").change(function () {
+        if (this.value != '-1')
+            document.getElementById("background").style.backgroundImage = `url('${this.value}')`;
+        else
+            document.getElementById("background").style.backgroundImage = 'none';
+    });
 });

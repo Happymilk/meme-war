@@ -47,6 +47,14 @@ def generate_game(game: Game):
         game.assets['captions'] = f.readlines()
         f.close()
 
+    game.motivation['pics'] = os.listdir('./static/memes/motivation')
+    for i in range(0, len(game.motivation['pics'])):
+        game.motivation['pics'][i] = f'./static/memes/motivation/{game.motivation["pics"][i]}'
+    
+    with open("./static/memes/motivations.txt", 'r', encoding='utf8') as f:
+        game.motivation['names'] = f.readlines()
+        f.close()
+
 
 # Main getters #
 def get_caption():
@@ -268,7 +276,11 @@ def join(name=None, id=None):
         id = request.args.get('id')
 
     if request.args.get('clear'):
-        return render_template('join.html')
+        text = '<option value="-1">Вот и я её не вижу, а она есть</option>'
+        for i in range(0, len(game.motivation['pics'])):
+            text += f'<option value="{game.motivation["pics"][i]}">{game.motivation["names"][i]}</option>'
+
+        return render_template('join.html', motivs=text)
 
     if name:
         if game.status == GameStatus.NOT_STARTED:
@@ -499,7 +511,7 @@ def rules():
 if __name__ == '__main__':
     try:
         try:
-            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=80)
+            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=8000)
         except Exception:
             app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=10000)
     except Exception:
