@@ -13,14 +13,14 @@
     <div>
         <h1>Meme War</h1>
     </div>
-    <div class="btndiv">
-        <input type="button" class="btn anim" onclick="location.href='/create';" value="Создать игру" />
+    <div class="btndiv anim" style="margin-bottom: 20px;">
+        <input type="button" class="btn" onclick="location.href='/create';" value="Создать игру" style="background-image: url('/static/plus_2795 (1).png'); background-repeat: no-repeat; background-size: 45px; background-color: transparent;" />
     </div>
-    <div class="btndiv">
-        <input type="button" class="btn anim" onclick="location.href='/join';" value="Подключиться к игре" />
+    <div class="btndiv anim" style="margin-bottom: 20px;">
+        <input type="button" class="btn" onclick="location.href='/join';" value="Подключиться к игре" style="background-image: url('/static/electric-plug_1f50c\ \(1\).png'); background-repeat: no-repeat; background-size: 45px; background-color: transparent;" />
     </div>
-    <div class="btndiv">
-        <input type="button" class="btn anim" onclick="location.href='/rules';" value="Правила" />
+    <div class="btndiv anim">
+        <input type="button" class="btn" onclick="location.href='/rules';" value="Правила" style="background-image: url('/static/books_1f4da.png'); background-repeat: no-repeat; background-size: 45px; background-color: transparent;" />
     </div>
     <div style="position: fixed; bottom: 0; min-width: 100%;">
         <div>
@@ -30,6 +30,20 @@
             QA: Aliceisangry
         </div>
     </div>
+    <div style="display: flex;position: fixed; min-width: 1040px; MIN-HEIGHT: 3000px; z-index: -1; top: 0px; background-color: rgba(255, 255, 255, 0.5);"></div>
+    <iframe id="go" src="https://giphy.com/search/meme" style="position: fixed; min-width: 1040px; MIN-HEIGHT: 10000px; z-index: -2; left: 0; top: 0; overflow: hidden;"></iframe>
+    <script>
+        let y = -300;
+        document.getElementById("go").onload = () => { 
+            setInterval(() => {
+                document.getElementById('go').style.top = `${y}px`;
+                document.getElementById('go').style.left = `-30px`;
+                if (y > -3000)
+                    y -= 3;
+                
+            }, 100);
+        };
+    </script>
 </body>
 
 </html>

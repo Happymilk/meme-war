@@ -100,7 +100,7 @@ $(document).ready(() => {
                             $('#loading').hide();
                             in_text = "<h1 style='text-align: center;'>Карты</h1>";
                             for (let i = 0; i < data[1].length; i++) {
-                                in_text += `<div class="container"><div class='overlay' hidden id='${i}' onclick="$('#${i}')[0].className = 'overlay';setTimeout(() => {$('#${i}').addClass('animate__animated animate__slideOutRight');setTimeout(() => {$('#${i}').hide();},1000);}, 200);"><input type="button" class="overlaybtn anim" onclick="location.href='/sendcard?id=${id}&card=${data[1][i].path}';" value="Выбрать" /></div><img src="${data[1][i].fullpath}" style="box-shadow: 0 0 10px rgba(0,0,0,0.5);" onclick="$('#${i}')[0].className = 'overlay';setTimeout(() => {$('#${i}').addClass('animate__animated animate__slideInLeft');$('#${i}').show();}, 200);"/></div>`;
+                                in_text += `<div class="container"><div class='overlay' hidden id='${i}' onclick="$('#${i}')[0].className = 'overlay';setTimeout(() => {$('#${i}').addClass('animate__animated animate__slideOutRight');setTimeout(() => {$('#${i}').hide();},1000);}, 200);"><input type="button" class="overlaybtn anim" onclick="location.href='/sendcard?id=${id}&card=${data[1][i].path}';" value="Выбрать" /></div><img class="animate__animated animate__fadeIn" src="${data[1][i].fullpath}" style="box-shadow: 0 0 10px rgba(0,0,0,0.5);" onclick="$('#${i}')[0].className = 'overlay';setTimeout(() => {$('#${i}').addClass('animate__animated animate__slideInLeft');$('#${i}').show();}, 200);"/></div>`;
                             }
                             in_text += `<input type="button" class="overlaybtn anim" onclick="location.href='/newcards?id=${id}';" value="Перераздать (-1 балл)" />`
 
@@ -112,8 +112,8 @@ $(document).ready(() => {
                                 return
 
                             $('#loading').hide();
-                            in_text = `<h1>Твой выбор:</h1><img id="pic" src="${data[1]}" />`
-                            in_text += `<input type="button" class="overlaybtn anim" onclick="location.href='/revert?id=${id}&card=${data[1]}';" value="Переизбрать" />`
+                            in_text = `<h1 style="text-align: center;">Твой выбор</h1><img style="box-shadow: 0 0 10px rgba(0,0,0,0.5);" class="animate__animated animate__fadeIn" id="pic" src="${data[1]}" />`
+                            in_text += `<input type="button" class="overlaybtn anim" style="position: fixed; bottom: 0px; left: 0;" onclick="location.href='/revert?id=${id}&card=${data[1]}';" value="Переизбрать" />`
                             $('#my').html(in_text);
                             break;
 

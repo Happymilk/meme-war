@@ -14,16 +14,16 @@
     <div>
         <h1>Meme War</h1>
     </div>
-    <div>Введите имя:</div>
+    <div style="font-size: xx-large;">Введите имя:</div>
     <form action="/join">
         <div class="btndiv">
-            <input type="text" class="btn animate__animated animate__headShake" name="name">
+            <input type="text" maxlength="20" class="btn animate__animated animate__headShake" name="name" style="border: 1px solid;">
         </div>
         <div class="btndiv">
-            <label for="motivs">Парень в крутом костюме, кто ты без него?</label>
+            <div style="font-size: xx-large; word-break: break-word; text-align: center;">Парень в крутом костюме, кто ты без него?</div>
         </div>
         <div class="btndiv">
-            <select name="motivs" id="motivs">
+            <select name="motivs" id="motivs" style="min-width: 300px; border-radius: 0; margin-bottom: 20px;">
                 {{ motivs|safe }}
             </select>
         </div>

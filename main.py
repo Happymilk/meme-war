@@ -252,7 +252,7 @@ def server_tick():
                                 win += f'{p.name} +{points};'
                                 break
 
-            win += f'|||<img src="{ppp}" id="supermem" style="margin-left: 50px;">'
+            win += f'|||<img style="box-shadow: 0 0 10px rgba(0,0,0,0.5);" class="animate__animated animate__fadeIn" src="{ppp}" id="supermem" style="margin-left: 50px;">'
             game.rounds[-1]['win'] = win
 
         if game.last['endtimer'] <= 0:
@@ -280,7 +280,7 @@ def join(name=None, motivs=None):
         motivs = request.args.get('motivs')
 
     if request.args.get('clear'):
-        text = '<option value="-1">Вот и я её не вижу, а она есть</option>'
+        text = '<option value="-1">Ничто</option>'
         for i in range(0, len(game.motivation['pics'])):
             text += f'<option value="{game.motivation["pics"][i]}">{game.motivation["names"][i]}</option>'
 
@@ -467,7 +467,8 @@ def client_tick(id=None, card=None):
     elif player.status == PlayerStatus.SHOULD_VOTE:
         inner = ''
         for r in game.rounds[-1]['picks']:
-            inner += f'<div class="container"><div>{r["name"]}:</div><div class="overlay" hidden id="{r["id"]}" onclick="$(\'#{r["id"]}\').hide();"><input type="button" class="overlaybtn anim" onclick="location.href=\'/sendvote?id={id}&vid={r["id"]}\';" value="Выбрать" /></div><img src="{r["fullpath"]}" onclick="$(\'#{r["id"]}\').show();"/></div>'
+            inner += f'<div class="container"><div>{r["name"]}:</div><div class="overlay" hidden id="{r["id"]}" onclick="$(\'#{r["id"]}\')[0].className = \'overlay\';setTimeout(() => {{$(\'#{r["id"]}\').addClass(\'animate__animated animate__slideOutRight\');setTimeout(() => {{$(\'#{r["id"]}\').hide();}},1000);}}, 200);"><input type="button" class="overlaybtn anim" onclick="location.href=\'/sendvote?id={id}&vid={r["id"]}\';" value="Выбрать" /></div><img style="box-shadow: 0 0 10px rgba(0,0,0,0.5);" class="animate__animated animate__fadeIn" src="{r["fullpath"]}" onclick="$(\'#{r["id"]}\')[0].className = \'overlay\';setTimeout(() => {{$(\'#{r["id"]}\').addClass(\'animate__animated animate__slideInLeft\');$(\'#{r["id"]}\').show();}}, 200);"/></div>'
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
         return jsonify([int(PlayerStatus.SHOULD_VOTE), inner])  # vote.html
 
     elif player.status == PlayerStatus.VOTED:
@@ -521,7 +522,7 @@ def undef():
 if __name__ == '__main__':
     try:
         try:
-            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=80)
+            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=8000)
         except Exception:
             app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=10000)
     except Exception:

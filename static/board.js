@@ -2,7 +2,8 @@ $(document).ready(() => {
     let players = [],
         last = -1,
         doreq = true,
-        caption = '';
+        caption = '',
+        result = '';
 
     window.onbeforeunload = function(event) {
         let audio = document.getElementById('main');
@@ -14,12 +15,11 @@ $(document).ready(() => {
         document.getElementById("here").style.height = `${window.innerHeight - 110}px`;
     });
 
-    function rennnder(audio) {
+    function rennnder(audio, canvas) {
         var context = new AudioContext();
         var src = context.createMediaElementSource(audio);
         var analyser = context.createAnalyser();
 
-        var canvas = document.getElementById("canvas");
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         var ctx = canvas.getContext("2d");
@@ -72,7 +72,7 @@ $(document).ready(() => {
         $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
         let audio = document.getElementById('main');
         audio.currentTime = data[1];
-        rennnder(audio);
+        rennnder(audio, document.getElementById("canvas"));
     });
 
     $('#next').click(() => {
@@ -83,7 +83,7 @@ $(document).ready(() => {
         $.get('/nextmvt').done((data) => {
             $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
             let audio = document.getElementById('main');
-            rennnder(audio);
+            rennnder(audio, document.getElementById("canvas"));
         });
     });
 
@@ -238,14 +238,17 @@ $(document).ready(() => {
                             hide();
                             setcaption(data[2]);
                             setplayers(data[5], 1);
-                            let res = data[7].split('|||');
-                            $('#roundhead').html(res[0]);
-                            $('#mem').html(res[1]);
+                            if (result != data[7]) {
+                                result = data[7]
+                                let res = data[7].split('|||');
+                                $('#roundhead').html(res[0]);
+                                $('#mem').html(res[1]);
+                            }
 
                             $('#supermem').css('min-width', 'unset');
                             let hh = $(window).height() - $('#head').height() - $('#roundhead').height() - $('#caption').height() - 30;
                             $('#supermem').css('min-height', hh);
-                            $('#supermem').css('max-height', hh);
+                            $('#supermem').css('max-height', hh);                            
                             break;
 
                         default:
@@ -255,14 +258,14 @@ $(document).ready(() => {
                     let h1s = document.getElementsByTagName('h1');
                     for (let i = 0; i < h1s.length; i++) {
                         if (h1s[i].clientHeight > 90) {
-                            h1s[i].style.fontSize = `${60 / (h1s[i].clientHeight / 90)}px`;
+                            h1s[i].style.fontSize = `30px`;
                         }
                     }
 
                     let h2s = document.getElementsByTagName('h2');
                     for (let i = 0; i < h2s.length; i++) {
                         if (h2s[i].clientHeight > 180) {
-                            h2s[i].style.fontSize = `${60 / (h1s[i].clientHeight / 180)}px`;
+                            h2s[i].style.fontSize = `30px`;
                         }
                     }
 
