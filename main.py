@@ -522,7 +522,7 @@ def undef():
 if __name__ == '__main__':
     try:
         try:
-            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=8000)
+            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=80)
         except Exception:
             app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=10000)
     except Exception:
