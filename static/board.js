@@ -3,7 +3,10 @@ $(document).ready(() => {
         last = -1,
         doreq = true,
         caption = '',
-        result = '';
+        result = '',
+        doaudio = true,
+        sshow = true,
+        hhide = true;
 
     window.onbeforeunload = function(event) {
         let audio = document.getElementById('main');
@@ -30,7 +33,6 @@ $(document).ready(() => {
         analyser.fftSize = 256;
 
         var bufferLength = analyser.frequencyBinCount;
-        console.log(bufferLength);
 
         var dataArray = new Uint8Array(bufferLength);
 
@@ -68,27 +70,35 @@ $(document).ready(() => {
         renderFrame();
     }
 
-    $.get('/mvt').done((data) => {
-        $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
-        let audio = document.getElementById('main');
-        audio.currentTime = data[1];
-        rennnder(audio, document.getElementById("canvas"));
-    });
-
-    $('#next').click(() => {
-        $('#next')[0].className = '';
-        setTimeout(() => {
-            $("#next").addClass('animate__animated animate__flip');
-        }, 200);
-        $.get('/nextmvt').done((data) => {
-            $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
-            let audio = document.getElementById('main');
-            rennnder(audio, document.getElementById("canvas"));
-        });
-    });
-
     $('#start').click(() => {
         $.get(`/start?cc=${$('#cards').val()}`);
+    });
+
+    function nnextads() {
+        $('#aaads').on('ended', () => {
+            $.get('/ads').done((data) => {
+                $('#ads').html(`<audio autoplay controls src="${data}" id='aaads'></audio>`);
+
+                nnextads();
+            });
+        });
+    }
+
+    $('#smoke').click(() => {
+        if ($('#smoke').val() == 'Перекур') {
+            $('#smoke').val('Продолжить');
+            $('#ads').html(`<audio autoplay controls src="/static/music/ads.mp3" id='aaads' ></audio>`);
+            nnextads();
+            setTimeout(() => {
+                $('#main').trigger("pause");
+            }, 200);
+        } else {
+            $('#smoke').val('Перекур');
+            $('#ads').html('');
+            setTimeout(() => {
+                $('#main').trigger("play");
+            }, 200);
+        }
     });
 
     function hide() {
@@ -99,7 +109,16 @@ $(document).ready(() => {
             $('#start').hide();
             $('#cards').hide();
             $('#cardscap').hide();
+            $('#smoke').show();
         }, 1000);
+
+        if (hhide) {
+            hhide = false;
+            $('#smoke')[0].className = 'button-53';
+            setTimeout(() => {
+                $("#smoke").addClass('animate__animated animate__fadeInRight');
+            }, 200);
+        }
     }
 
     function show() {
@@ -110,7 +129,16 @@ $(document).ready(() => {
             $('#start').show();
             $('#cards').show();
             $('#cardscap').show();
+            $('#smoke').hide();
         }, 1000);
+
+        if (sshow) {
+            sshow = false;            
+            $('#smoke')[0].className = 'button-53';
+            setTimeout(() => {
+                $("#smoke").addClass('animate__animated animate__fadeOutRight');
+            }, 200);
+        }
     }
 
     function setplayers(list, mode = 0) {
@@ -159,6 +187,40 @@ $(document).ready(() => {
             return;
     }
 
+    $.get('/checkaudio').done((data) => {
+        $('#audio').html(data);
+    });
+
+    function auudio() {
+        $.get('/audio').done((data) => {
+            $('#audio').html(`<audio autoplay controls src="${data}" id="audiotag" hidden></audio>`);
+
+            setTimeout(() => {
+                $('#audiotag').on('ended', () => {
+                    setTimeout(() => {
+                        auudio();
+                    }, 2000);
+                });
+            }, 2000);
+        });
+    }
+
+    setTimeout(() => {
+        auudio();
+    }, 30000);
+
+    function nnext() {
+        $('#main').on('ended', () => {
+            $.get('/nextmvt').done((data) => {
+                $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
+                let audio = document.getElementById('main');
+                rennnder(audio, document.getElementById("canvas"));
+
+                nnext();
+            });
+        });
+    }
+
     setInterval(() => {
         if (doreq) {
             doreq = false;
@@ -167,6 +229,33 @@ $(document).ready(() => {
                     doreq = true;
                 })
                 .done((data) => {
+                    if (data[0] > 0 && doaudio) {
+                        doaudio = false;
+
+                        $('#next').show();
+                            $.get('/mvt').done((data) => {
+                                $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
+                                let audio = document.getElementById('main');
+                                audio.currentTime = data[1];
+                                rennnder(audio, document.getElementById("canvas"));
+
+                                nnext();
+                            });
+                        
+                            $('#next').click(() => {
+                                $('#next')[0].className = '';
+                                setTimeout(() => {
+                                    $("#next").addClass('animate__animated animate__flip');
+                                }, 200);
+                                $.get('/nextmvt').done((data) => {
+                                    $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
+                                    let audio = document.getElementById('main');
+                                    rennnder(audio, document.getElementById("canvas"));
+
+                                    nnext();
+                                });
+                            });
+                    }
                     switch (data[0]) {
                         case -1:
                             location.href = '/create'
@@ -178,6 +267,7 @@ $(document).ready(() => {
 
                         case 1:
                             hide();
+                            $('#audio').html("");
                             break;
 
                         case 2:

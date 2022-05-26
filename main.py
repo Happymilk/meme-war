@@ -38,7 +38,18 @@ def generate_game(game: Game):
     game.music['vote_start'] = os.listdir('./static/music/vote/start')
     game.music['vote_end'] = os.listdir('./static/music/vote/end')
     game.music['tracks'] = os.listdir('./static/music/back')
+    game.music['start'] = os.listdir('./static/music/start')
+    game.music['ads'] = os.listdir('./static/music/ads')
     random.shuffle(game.music['tracks'])
+    random.shuffle(game.music['start'])
+    random.shuffle(game.music['ads'])
+
+    for i in range(0, len(game.music['tracks'])):
+        if game.music['tracks'][i] == '0.mp3':
+            del(game.music['tracks'][i])
+            break
+
+    game.music['tracks'].append('0.mp3')
 
     generate_memes(game, './static/memes/gif')
     generate_memes(game, './static/memes/img')
@@ -102,6 +113,43 @@ def get_nextmvt():  # next track
         game.last['track'] = 0
 
     return get_mvt()
+
+
+@app.route('/audio')
+def audio():
+    game = get_game()
+
+    if game.status == GameStatus.NOT_STARTED:
+        game.last['audio'] += 1
+        if game.last['audio'] >= len(game.music['start']):
+            game.last['audio'] = 0
+
+        return jsonify(f'./static/music/start/{game.music["start"][game.last["audio"]]}')
+    else:
+        return ''
+
+
+@app.route('/ads')
+def ad_audio():
+    game = get_game()
+
+    game.last['ad'] += 1
+    if game.last['ad'] >= len(game.music['ads']):
+        game.last['ad'] = 0
+        random.shuffle(game.music['ads'])
+
+
+    return jsonify(f'./static/music/ads/{game.music["ads"][game.last["ad"]]}')
+
+
+@app.route('/checkaudio')
+def gg():
+    game = get_game()
+
+    if game.status == GameStatus.NOT_STARTED:
+        return '<audio autoplay controls src="/static/music/Приветствие на сервер - Хулиганский Public.mp3" id="audiotag" hidden></audio>'
+    else:
+        return ''
 
 
 @app.route('/getjgame')

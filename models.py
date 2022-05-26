@@ -72,7 +72,9 @@ class Game:
         self.music = {
             'tracks': [],
             'vote_start': [],
-            'vote_end': []
+            'vote_end': [],
+            'start': [],
+            'ads': []
         }
         self.motivation = {
             'pics': [],
@@ -87,7 +89,9 @@ class Game:
         self.last = {
             'start': -1,
             'end': -1,
-            'track': -1,
+            'track': 0,
+            'ad': 0,
+            'audio': -1,
             'caption': -1,
             'timer': 0,
             'endtimer': 0
