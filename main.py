@@ -336,18 +336,20 @@ def join(name=None, motivs=None):
 
     if name:
         if game.status == GameStatus.NOT_STARTED:
-            for p in game.players:
-                if p.name == name:
-                    return redirect(f'/client?id={p.id}')
+            for i in range(0, len(game.players)):
+                if game.players[i].name == name:
+                    game.players[i].motiv = motivs
+                    return redirect(f'/client?id={game.players[i].id}')
 
             player = Player(name)
             game.players.append(player)
             game.players[-1].motiv = motivs
             return redirect(f'/client?id={player.id}')
         else:
-            for p in game.players:
-                if p.name == name:
-                    return redirect(f'/client?id={p.id}')
+            for i in range(0, len(game.players)):
+                if game.players[i].name == name:
+                    game.players[i].motiv = motivs
+                    return redirect(f'/client?id={game.players[i].id}')
 
             return redirect('/join?clear=true')
     else:
@@ -566,11 +568,17 @@ def undef():
     return ''
 
 
+@app.after_request
+def add_header(response):
+    response.headers['Cache-Control'] = 'no-cache, no-store'
+    return response
+
+
 # Main method #
 if __name__ == '__main__':
     try:
         try:
-            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=80)
+            app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=8000)
         except Exception:
             app.run(threaded=True, debug=True, use_reloader=False, host='0.0.0.0', port=10000)
     except Exception:

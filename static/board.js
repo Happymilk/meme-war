@@ -50,7 +50,7 @@ $(document).ready(() => {
 
             analyser.getByteFrequencyData(dataArray);
 
-            ctx.fillStyle = "#fff";
+            ctx.fillStyle = "#a0aec0";
             ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
             for (var i = 0; i < bufferLength; i++) {
