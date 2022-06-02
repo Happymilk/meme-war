@@ -133,7 +133,7 @@ $(document).ready(() => {
         }, 1000);
 
         if (sshow) {
-            sshow = false;            
+            sshow = false;
             $('#smoke')[0].className = 'button-53';
             setTimeout(() => {
                 $("#smoke").addClass('animate__animated animate__fadeOutRight');
@@ -233,28 +233,28 @@ $(document).ready(() => {
                         doaudio = false;
 
                         $('#next').show();
-                            $.get('/mvt').done((data) => {
+                        $.get('/mvt').done((data) => {
+                            $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
+                            let audio = document.getElementById('main');
+                            audio.currentTime = data[1];
+                            rennnder(audio, document.getElementById("canvas"));
+
+                            nnext();
+                        });
+
+                        $('#next').click(() => {
+                            $('#next')[0].className = '';
+                            setTimeout(() => {
+                                $("#next").addClass('animate__animated animate__flip');
+                            }, 200);
+                            $.get('/nextmvt').done((data) => {
                                 $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
                                 let audio = document.getElementById('main');
-                                audio.currentTime = data[1];
                                 rennnder(audio, document.getElementById("canvas"));
 
                                 nnext();
                             });
-                        
-                            $('#next').click(() => {
-                                $('#next')[0].className = '';
-                                setTimeout(() => {
-                                    $("#next").addClass('animate__animated animate__flip');
-                                }, 200);
-                                $.get('/nextmvt').done((data) => {
-                                    $('#mvt').html(`<audio class="animate__animated animate__bounceIn" autoplay controls src="${data[0]}" id="main"></audio> `);
-                                    let audio = document.getElementById('main');
-                                    rennnder(audio, document.getElementById("canvas"));
-
-                                    nnext();
-                                });
-                            });
+                        });
                     }
                     switch (data[0]) {
                         case -1:
@@ -338,7 +338,7 @@ $(document).ready(() => {
                             $('#supermem').css('min-width', 'unset');
                             let hh = $(window).height() - $('#head').height() - $('#roundhead').height() - $('#caption').height() - 30;
                             $('#supermem').css('min-height', hh);
-                            $('#supermem').css('max-height', hh);                            
+                            $('#supermem').css('max-height', hh);
                             break;
 
                         default:

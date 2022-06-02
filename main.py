@@ -138,7 +138,6 @@ def ad_audio():
         game.last['ad'] = 0
         random.shuffle(game.music['ads'])
 
-
     return jsonify(f'./static/music/ads/{game.music["ads"][game.last["ad"]]}')
 
 
@@ -518,7 +517,7 @@ def client_tick(id=None, card=None):
         inner = ''
         for r in game.rounds[-1]['picks']:
             inner += f'<div class="container"><div>{r["name"]}:</div><div class="overlay" hidden id="{r["id"]}" onclick="$(\'#{r["id"]}\')[0].className = \'overlay\';setTimeout(() => {{$(\'#{r["id"]}\').addClass(\'animate__animated animate__slideOutRight\');setTimeout(() => {{$(\'#{r["id"]}\').hide();}},1000);}}, 200);"><input type="button" class="overlaybtn anim" onclick="location.href=\'/sendvote?id={id}&vid={r["id"]}\';" value="Выбрать" /></div><img style="box-shadow: 0 0 10px rgba(0,0,0,0.5);" class="animate__animated animate__fadeIn" src="{r["fullpath"]}" onclick="$(\'#{r["id"]}\')[0].className = \'overlay\';setTimeout(() => {{$(\'#{r["id"]}\').addClass(\'animate__animated animate__slideInLeft\');$(\'#{r["id"]}\').show();}}, 200);"/></div>'
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+
         return jsonify([int(PlayerStatus.SHOULD_VOTE), inner])  # vote.html
 
     elif player.status == PlayerStatus.VOTED:
