@@ -11,16 +11,18 @@
 
 <body class="flex flex-col items-center justify-center min-h-screen text-gray-900">
     <div>
-        <h1>Meme War</h1>
+        <h1 id="title">Meme War</h1>
+        <img id="new" src="/static/new-version-red-rubber-stamp-over-white-background-88001863.png" style="max-width: 25%;min-width: 25%;z-index: 2;position: absolute;right: 0;top: 0;" />
     </div>
-    <div class="btndiv">
-        <input type="button" class="btn" style="background-color: darkgreen;" onclick="location.href='/create';" value="Создать игру" />
+    <div class="btndiv anim" style="margin-bottom: 20px;">
+        <input type="button" class="btn" onclick="location.href='/create';" value="Создать игру" style="background-image: url('/static/plus_2795 (1).png'); background-repeat: no-repeat; background-size: 45px; background-color: transparent;" />
     </div>
-    <div class="btndiv">
-        <input type="button" class="btn" style="background-color:darkorange; " onclick="location.href='/join';" value="Подключиться к игре" />
+    <div class="btndiv anim" style="margin-bottom: 20px;">
+        <input type="button" class="btn" onclick="location.href='/join';" value="Подключиться к игре" style="background-image: url('/static/electric-plug_1f50c\ \(1\).png'); background-repeat: no-repeat; background-size: 45px; background-color: transparent;"
+        />
     </div>
-    <div class="btndiv">
-        <input type="button" class="btn" style="background-color:lightpink;" onclick="location.href='/rules';" value="Правила" />
+    <div class="btndiv anim">
+        <input type="button" class="btn" onclick="location.href='/rules';" value="Правила" style="background-image: url('/static/books_1f4da.png'); background-repeat: no-repeat; background-size: 45px; background-color: transparent;" />
     </div>
     <div style="position: fixed; bottom: 0; min-width: 100%;">
         <div>
@@ -30,6 +32,32 @@
             QA: Aliceisangry
         </div>
     </div>
+    <div style="display: flex;position: fixed; min-width: 100%; MIN-HEIGHT: 100%; z-index: -1; top: 0px; background-color: rgba(255, 255, 255, 0.5);"></div>
+    <iframe id="go" src="https://giphy.com/search/meme" style="position: fixed; min-width: 1040px; MIN-HEIGHT: 10000px; z-index: -2; left: 0; top: 0; overflow: hidden;"></iframe>
+    <script>
+        let y = -300;
+        if (window.innerWidth > 1300) {
+            y = -1200;
+            document.getElementById('title').style.fontSize = `720%`;
+            document.getElementById('title').style.lineHeight = `200px`;
+            document.getElementById('new').style.maxWidth = `10%`;
+            document.getElementById('new').style.minWidth = `10%`;
+            document.getElementById('new').style.right = `32%`;
+            document.getElementById('new').style.top = `0`;
+        }
+        let yy = y * 10;
+        document.getElementById("go").onload = () => {
+            setTimeout(() => {
+                setInterval(() => {
+                    document.getElementById('go').style.top = `${y}px`;
+                    document.getElementById('go').style.left = `-30px`;
+                    if (y > yy)
+                        y -= 3;
+
+                }, 100);
+            }, 200);
+        };
+    </script>
 </body>
 
 </html>

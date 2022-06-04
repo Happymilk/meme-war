@@ -7,23 +7,34 @@
     <link rel="stylesheet" href="/static/main.css">
     <title>Join - Meme War</title>
     <link href="/static/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 </head>
 
 <body class="flex flex-col items-center justify-center min-h-screen text-gray-900">
     <div>
         <h1>Meme War</h1>
     </div>
-    <div>Введите имя:</div>
+    <div style="font-size: xx-large;">Введите имя:</div>
     <form action="/join">
         <div class="btndiv">
-            <input type="text" class="btn" style="background-color:darkgrey;" name="name">
+            <input type="text" maxlength="20" class="btn animate__animated animate__headShake" name="name" style="border: 1px solid;">
         </div>
         <div class="btndiv">
-            <input type="submit" class="btn" style="background-color: darkgreen;" value="Войти" />
+            <div style="font-size: xx-large; word-break: break-word; text-align: center;">Парень в крутом костюме, кто ты без него?</div>
+        </div>
+        <div class="btndiv">
+            <select name="motivs" id="motivs" style="min-width: 300px; border-radius: 0; margin-bottom: 20px;">
+                {{ motivs|safe }}
+            </select>
+        </div>
+        <div class="btndiv">
+            <input type="submit" class="btn  anim" value="Войти" />
         </div>
         <script type="text/javascript" src="/static/jquery.min.js"></script>
         <script type="text/javascript" src="/static/join.js"></script>
     </form>
+    <div style="display: flex;position: fixed; min-width: 100%; MIN-HEIGHT: 100%; z-index: -1; top: 0px; background-color: rgba(255, 255, 255, 0.5);"></div>
+    <div id="background" style="display: flex; position: fixed; min-width: 300%; min-height: 300%; z-index: -2; top: 0%; left: 0%;"></div>
 </body>
 
 </html>
